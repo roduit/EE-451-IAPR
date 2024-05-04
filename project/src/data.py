@@ -34,7 +34,7 @@ class Coin(Dataset):
         self.path = None
 
 
-        valide_types = ['train', 'test','ref']
+        valide_types = ['train', 'test', 'ref']
         if type not in valide_types:
             raise ValueError(f"Invalid type. Expected one of {valide_types}")
         else:
@@ -75,6 +75,7 @@ class trainCoin(Coin):
     """
     def __init__(self):
         super().__init__('train')
+        self.load_data()
 
     def load_data(self):
         """
@@ -83,7 +84,7 @@ class trainCoin(Coin):
         self.data : dict where the key is the class name and the value is a list of images
         self.data_index : dict where the key is the class name and the value is a list of image names
         """
-        self.data = {}
+        self.raw_data = {}
         self.data_index = {}
 
         success = False
@@ -91,12 +92,12 @@ class trainCoin(Coin):
         if os.path.exists(os.path.join(self.path, 'pickle')):
             print('Loading data from pickle files')
             try:
-                self.data = pickle_func.load_pickle(os.path.join(self.path, 'pickle', 'train.pkl'))
+                self.raw_data = pickle_func.load_pickle(os.path.join(self.path, 'pickle', 'train.pkl'))
                 self.data_index = pickle_func.load_pickle(os.path.join(self.path, 'pickle', 'train_index.pkl'))
-                success = True
-                raise Exception('Pickle files note found')
+                if ((self.raw_data is not None) and (self.data_index is not None)):
+                    success = True
             except Exception as e:
-                print("An error occured: ", e)
+                raise Exception('Pickle files note found')
         if not success: 
             print('Loading data from folders')
             folders = os.listdir(self.path)
@@ -104,11 +105,12 @@ class trainCoin(Coin):
                 folder_path = os.path.join(self.path, folder)
                 if os.path.isdir(folder_path):
                     folder_name = folder.split('.')[-1]
-                    self.data[folder_name], self.data_index[folder_name] = self.load_images_from_folder(folder_path)
+                    folder_name = folder_name.strip()
+                    self.raw_data[folder_name], self.data_index[folder_name] = self.load_images_from_folder(folder_path)
 
             if not os.path.exists(os.path.join(self.path, 'pickle')):
                 os.makedirs(os.path.join(self.path, 'pickle'))
-            pickle_func.save_pickle(self.data, os.path.join(self.path, 'pickle', 'train.pkl'))
+            pickle_func.save_pickle(self.raw_data, os.path.join(self.path, 'pickle', 'train.pkl'))
             pickle_func.save_pickle(self.data_index, os.path.join(self.path, 'pickle', 'train_index.pkl'))
             print('Data saved in pickle files')
 
@@ -119,10 +121,22 @@ class trainCoin(Coin):
         for filename in os.listdir(folder_path):
             if filename.endswith(".JPG"): 
                 img = Image.open(os.path.join(folder_path, filename))
+                img_array = np.array(img)
                 if img is not None:
-                    images.append(img)
+                    images.append(img_array)
                     image_names.append(os.path.splitext(filename)[0])
         return images, image_names
+    
+    def display_img(self, category, index):
+        """
+        Display the image at the given index
+        Args:
+            category (str): Category of the image
+            index (int): Index of the image to display
+        """
+        img = Image.fromarray(self.raw_data[category][index])
+        fig1 = plt.figure(figsize=(10, 10))
+        plt.imshow(img)
         
 class refCoin(Coin):
     """
