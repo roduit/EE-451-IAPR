@@ -50,14 +50,36 @@ class Coin(Dataset):
         """
         Load the data from the folder
         """
-        images = []
-        for file in os.listdir(self.path):
-            if file.endswith('.JPG'):
-                img = Image.open(os.path.join(self.path, file))
-                img_array = np.array(img)
-                if img is not None:
-                    images.append(img_array)
-        self.raw_data = np.array(images)
+        success = False
+        if os.path.exists(os.path.join(self.path, 'pickle')):
+            try:
+                print('Loading data from pickle files')
+                self.raw_data = pickle_func.load_pickle(os.path.join(self.path,'pickle', self.type+str('.pkl')))
+                self.data_index = pickle_func.load_pickle(os.path.join(self.path,'pickle', self.type+str('_index.pkl')))
+                if ((self.raw_data is not None) and (self.data_index is not None)):
+                    success = True
+            except Exception as e:
+                raise Exception('Pickle files note found')
+        if not success:
+            print('Loading data from folders')
+            image_names = []
+            images = []
+            for filename in os.listdir(self.path):
+                if filename.endswith(".JPG"): 
+                    img = Image.open(os.path.join(self.path, filename))
+                    img_array = np.array(img)
+                    if img is not None:
+                        images.append(img_array)
+                        image_names.append(os.path.splitext(filename)[0].strip())
+            self.raw_data = images
+            self.data_index = image_names
+
+            if not os.path.exists(os.path.join(self.path, 'pickle')):
+                os.makedirs(os.path.join(self.path, 'pickle'))
+
+            pickle_func.save_pickle(self.raw_data, os.path.join(self.path,'pickle',self.type+str('.pkl')))
+            pickle_func.save_pickle(self.data_index, os.path.join(self.path,'pickle',self.type+str('_index.pkl')))
+
     
     def display_img(self, index):
         """
@@ -88,7 +110,6 @@ class trainCoin(Coin):
         self.data_index = {}
 
         success = False
-
         if os.path.exists(os.path.join(self.path, 'pickle')):
             print('Loading data from pickle files')
             try:
