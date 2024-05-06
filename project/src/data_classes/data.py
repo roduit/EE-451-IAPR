@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 #import files
 import constants
 import pickle_func
-import processing.process_func as pf
 
 class Coin(Dataset):
     """
@@ -32,6 +31,10 @@ class Coin(Dataset):
 
         self.raw_data = None
         self.path = None
+        self.data_index = None
+        self.gray_img = []
+        self.processed_data = []
+        self.threshold = []
 
 
         valide_types = ['train', 'test', 'ref']
@@ -93,13 +96,3 @@ class Coin(Dataset):
             img = Image.fromarray(self.processed_data[index])
         fig1 = plt.figure(figsize=(10, 10))
         plt.imshow(img)
-    
-    def process_data(self):
-        """
-        Process the data
-        """
-        self.processed_data = []
-        for img in self.raw_data:
-            gray_img = pf.rgb_to_gray(img)
-            filtered_img = pf.apply_median(gray_img) * 255
-            self.processed_data.append(filtered_img)

@@ -43,3 +43,19 @@ try:
         raise FileNotFoundError("Folder train does not exist.", TRAIN)
 except Exception as e:
     print("An error occured: ", e)
+
+# ----------------------------------
+# -----  PROCESSING CONST  ---------
+# ----------------------------------
+
+# Disk size for opening
+DISK_SIZE = 15
+
+# Median filter kernel size
+KERNEL_SIZE = 5
+
+# Adjust the threshold
+ADJ_THRESHOLD = 15
+
+# Contour len
+MIN_CONTOUR_LEN = 1500
