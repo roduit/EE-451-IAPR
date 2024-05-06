@@ -37,3 +37,11 @@ def visualize_threshold(img,img_thresh, threshold):
     plt.axvline(x=threshold, color='red')
     plt.hist(img.ravel(), bins=256, range=[0, 256])
     plt.show()
+
+def display_contours(img, contours):
+    fig = plt.figure()
+    plt.axis('off')
+    plt.imshow(img, interpolation='nearest')
+    for contour in contours:
+        plt.plot(contour[:, 0], contour[:, 1], 'r',linewidth=2)
+    plt.show()
