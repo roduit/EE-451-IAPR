@@ -10,6 +10,7 @@ import numpy as np
 import os
 from PIL import Image
 import matplotlib.pyplot as plt
+import cv2 as cv
 
 # Importing files
 from data_classes.data import Coin
@@ -65,10 +66,10 @@ class trainCoin(Coin):
         image_names = []
         for filename in os.listdir(folder_path):
             if filename.endswith(".JPG"): 
-                img = Image.open(os.path.join(folder_path, filename))
-                img_array = np.array(img)
+                img = cv.imread(os.path.join(folder_path, filename))
+                img = cv.resize(img, (0,0), fx=0.25, fy=0.25)
                 if img is not None:
-                    images.append(img_array)
+                    images.append(img)
                     image_names.append(os.path.splitext(filename)[0])
         return images, image_names
     

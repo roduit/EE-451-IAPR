@@ -13,6 +13,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 from IPython.display import display
 import matplotlib.pyplot as plt 
+import cv2 as cv
 
 #import files
 import constants
@@ -69,8 +70,9 @@ class Coin(Dataset):
             images = []
             for filename in os.listdir(self.path):
                 if filename.endswith(".JPG"): 
-                    img = Image.open(os.path.join(self.path, filename))
-                    img_array = np.array(img)
+                    img = cv.imread(os.path.join(self.path, filename))
+                    img = cv.resize(img, (0,0), fx=0.25, fy=0.25)
+                    img_array = img #np.array(img)
                     if img is not None:
                         images.append(img_array)
                         image_names.append(os.path.splitext(filename)[0].strip())
@@ -84,15 +86,17 @@ class Coin(Dataset):
             pickle_func.save_pickle(self.data_index, os.path.join(self.path,'pickle',self.type+str('_index.pkl')))
 
     
-    def display_img(self, index, raw = True):
+    def show_img(self, index, raw = True):
         """
         Display the image at the given index
         Args:
             index (int): Index of the image to display
         """
         if raw:
-            img = Image.fromarray(self.raw_data[index])
+            img = self.raw_data[index]
+            img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
-            img = Image.fromarray(self.processed_data[index])
+            img = self.processed_data[index]
+            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         fig1 = plt.figure(figsize=(10, 10))
         plt.imshow(img)
