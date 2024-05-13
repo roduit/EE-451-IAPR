@@ -13,6 +13,7 @@ import os
 from skimage.measure import regionprops, approximate_polygon
 from skimage.morphology import closing, opening, disk, remove_small_holes, remove_small_objects
 from scipy import ndimage
+from copy import deepcopy
 
 # Importing files
 import constants
@@ -208,3 +209,40 @@ def remove_large_objects(img, max_size):
     # Remove the large objects
     img_clean = mask_size[labeled]
     return img_clean
+
+def get_contours_hand(image_set, path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for idx, img in enumerate(image_set):
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        img_original = deepcopy(img)
+        img_final = apply_hsv_threshold(img, my_trheshold_func)
+        img_final = closing(img_final, disk(3))
+        img_final = remove_small_holes(img_final, 5000)
+        img_final = remove_small_objects(img_final, 5000)
+        img_final = remove_large_objects(img_final, max_size=60000)
+        img_final = img_final.astype(np.uint8)
+        masked_img = cv2.bitwise_and(img_original, img_original, mask=img_final)
+        img_contours = detect_coin(masked_img, 20, 100, 3)
+        plt.figure()
+        plt.imshow(img_contours, interpolation='nearest', cmap='gray')
+        img_path = os.path.join(path, f'img_{idx}.png')
+        plt.savefig(img_path)
+        plt.close()
+
+def get_contours(image_set, path, ref_bg):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for idx, img in enumerate(image_set):
+        img = img.astype(np.uint8)
+        img = img - 0.9 * ref_bg
+        img_thresholded = apply_rgb_threshold(img, 0, 0, 0)
+        img_opening = closing(img_thresholded, disk(5))
+        img_opening = opening(img_opening, disk(5))
+        img_removed_small_holes = remove_small_holes(img_opening, 1000)
+        img_path = os.path.join(path, f'img_{idx}.png')
+        
+        plt.figure()
+        plt.imshow(img_removed_small_holes, interpolation='nearest', cmap='gray')
+        plt.savefig(img_path)
+        plt.close()
