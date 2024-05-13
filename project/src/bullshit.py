@@ -79,19 +79,19 @@ def extract_hsv_channels(img):
     return data_h, data_s, data_v
 
 def rgb_neutral_threshold(data_red, data_green, data_blue):
-    th_red = 200
+    th_red = 150
     th_green = 200
-    th_blue = 200
+    th_blue = 40
     data_red = (data_red > th_red)
     data_green = (data_green > th_green)
-    data_blue = (data_blue > th_blue)
+    data_blue = (data_blue < th_blue)
 
     return data_red, data_green, data_blue
 
 def rgb_noisy_bg_threshold(data_red, data_green, data_blue):
-    th_red = 0.5
-    th_green = 0.5
-    th_blue = 50
+    th_red = 170
+    th_green = 240
+    th_blue = 10
     data_red = (data_red > th_red)
     data_green = (data_green > th_green)
     data_blue = (data_blue < th_blue)

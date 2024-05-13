@@ -234,22 +234,16 @@ def get_contours_noisy(image_set, ref_bg, path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    for idx, img in enumerate(image_set):
+    for idx, img in enumerate(image_set_arr):
         img = img.astype(np.uint8)
-        img_original = deepcopy(img)
-        img = img - ref_bg.astype(np.uint8)
-        img_final = apply_rgb_threshold(img, rgb_noisy_bg_threshold)
-        # img_final = opening(img_final, disk(6))
-        # img_final = closing(img_final, disk(2))
-        # img_final = remove_small_holes(img_final, 2000)
-        # img_final = img_final.astype(np.uint8)
-        # img_final = np.logical_not(img_final).astype(np.uint8)
-        # masked_img = cv2.bitwise_and(img_original, img_original, mask=img_final)
-        # img_contours = detect_coin(masked_img, 20, 100, 3)
+        img = img - ref_bg
+        img_thresholded = apply_rgb_threshold(img,rgb_noisy_bg_threshold)
+        img_opening = closing(img_thresholded, disk(2))
+        img_removed_small_holes = remove_small_holes(img_opening, 1000)
         img_path = os.path.join(path, f'img_{idx}')
         if idx == 5:
-            plt.imshow(img_final, interpolation='nearest')
+            plt.imshow(img_removed_small_holes, interpolation='nearest')
         plt.figure()
-        plt.imshow(img_final, interpolation='nearest')
+        plt.imshow(img_removed_small_holes, interpolation='nearest')
         plt.savefig(img_path)
         plt.close()
