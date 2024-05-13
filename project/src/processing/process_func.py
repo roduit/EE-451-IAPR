@@ -163,42 +163,6 @@ def calculate_ref_bg(set_images):
         imgs_mean = imgs_mean.astype(np.uint8)
         return imgs_mean
 
-def process_images(raw_data, ref_bg, category):
-    """
-    Process the images to extract the contours
-    
-    Args:
-        raw_data (dict): Dictionary containing the raw images
-        ref_bg (dict): Dictionary containing the reference background for each class
-    
-    Returns:
-        contours (dict): Dictionary containing the contours for each class
-    """
-    processed_images = []
-    path =  os.path.join(constants.RESULT_PATH, category)
-    if not os.path.exists(path):
-        os.makedirs(path)
-    for idx, img in enumerate(raw_data):
-        img = img.astype(np.uint8)
-        img = img - 0.9 * ref_bg
-        img_threshold = apply_rgb_threshold(img, 0, 0, 0)
-        img_closing = closing(img_threshold, disk(2))
-        img_removed_small_holes = remove_small_holes(img_closing, 1000)
-        plt.figure()
-    
-        # Plot the image
-        plt.imshow(img_removed_small_holes, interpolation='nearest', cmap='gray')
-        
-        # Save the figure directly without displaying it
-        img_path = os.path.join(path, f'img_{idx}.png')
-        plt.savefig(img_path)
-        
-        # Close the figure to free up memory
-        plt.close()
-        processed_images.append(img_removed_small_holes)
-    
-    return processed_images
-
 def remove_large_objects(img, max_size):
     # Label the objects in the image
     labeled, num_objects = ndimage.label(img)
@@ -211,9 +175,13 @@ def remove_large_objects(img, max_size):
     return img_clean
 
 def get_contours_hand(image_set, path):
+
+    image_set_arr = np.array(image_set)
+
     if not os.path.exists(path):
         os.makedirs(path)
-    for idx, img in enumerate(image_set):
+
+    for idx, img in enumerate(image_set_arr):
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         img_original = deepcopy(img)
         img_final = apply_hsv_threshold(img, my_trheshold_func)
@@ -230,19 +198,30 @@ def get_contours_hand(image_set, path):
         plt.savefig(img_path)
         plt.close()
 
-def get_contours(image_set, path, ref_bg):
+def get_contours(image_set, ref_bg, path):
+
+    image_set_arr = np.array(image_set)
+    ref_bg = np.array(ref_bg).astype(np.uint8)
+
     if not os.path.exists(path):
         os.makedirs(path)
-    for idx, img in enumerate(image_set):
+
+    for idx, img in enumerate(image_set_arr):
         img = img.astype(np.uint8)
-        img = img - 0.9 * ref_bg
-        img_thresholded = apply_rgb_threshold(img, 0, 0, 0)
-        img_opening = closing(img_thresholded, disk(5))
-        img_opening = opening(img_opening, disk(5))
-        img_removed_small_holes = remove_small_holes(img_opening, 1000)
-        img_path = os.path.join(path, f'img_{idx}.png')
-        
+        img_original = deepcopy(img)
+        img = img - (0.9 * ref_bg).astype(np.uint8)
+        img_final = apply_rgb_threshold(img, 255, 180, 180)
+        img_final = opening(img_final, disk(6))
+        img_final = closing(img_final, disk(2))
+        img_final = remove_small_holes(img_final, 2000)
+        img_final = img_final.astype(np.uint8)
+        img_final = np.logical_not(img_final).astype(np.uint8)
+        masked_img = cv2.bitwise_and(img_original, img_original, mask=img_final)
+        img_contours = detect_coin(masked_img, 20, 100, 3)
+        img_path = os.path.join(path, f'img_{idx}')
+        if idx == 5:
+            plt.imshow(img)
         plt.figure()
-        plt.imshow(img_removed_small_holes, interpolation='nearest', cmap='gray')
+        plt.imshow(img_contours, interpolation='nearest', cmap='gray')
         plt.savefig(img_path)
         plt.close()

@@ -16,6 +16,7 @@ import cv2 as cv
 from data_classes.data import Coin
 import pickle_func
 import processing.process_func as pf
+import constants
 
 class trainCoin(Coin):
     """
@@ -105,5 +106,12 @@ class trainCoin(Coin):
         """
         Process the images to extract the contours
         """
-        for category in self.raw_data.keys():
-            _ = pf.process_images(self.raw_data[category], self.ref_bg[category], category)
+        hand_category = ['hand', 'hand_outliers']
+        for category in self.raw_data:
+            images_set = self.raw_data[category]
+            background = self.ref_bg[category]
+            path = os.path.join(constants.RESULT_PATH, category)
+            if category in hand_category:
+                pf.get_contours_hand(images_set, path)
+            else:
+                pf.get_contours(images_set, background, path)
