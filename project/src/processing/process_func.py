@@ -184,7 +184,7 @@ def get_contours_hand(image_set, path):
     for idx, img in enumerate(image_set_arr):
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         img_original = deepcopy(img)
-        img_final = apply_hsv_threshold(img, my_trheshold_func)
+        img_final = apply_hsv_threshold(img, hand_threshold)
         img_final = closing(img_final, disk(3))
         img_final = remove_small_holes(img_final, 5000)
         img_final = remove_small_objects(img_final, 5000)
@@ -210,7 +210,7 @@ def get_contours(image_set, ref_bg, path):
         img = img.astype(np.uint8)
         img_original = deepcopy(img)
         img = img - (0.9 * ref_bg).astype(np.uint8)
-        img_final = apply_rgb_threshold(img, 255, 180, 180)
+        img_final = apply_rgb_threshold(img, rgb_neutral_threshold)
         img_final = opening(img_final, disk(6))
         img_final = closing(img_final, disk(2))
         img_final = remove_small_holes(img_final, 2000)
@@ -223,5 +223,33 @@ def get_contours(image_set, ref_bg, path):
             plt.imshow(img)
         plt.figure()
         plt.imshow(img_contours, interpolation='nearest', cmap='gray')
+        plt.savefig(img_path)
+        plt.close()
+
+def get_contours_noisy(image_set, ref_bg, path):
+
+    image_set_arr = np.array(image_set)
+    ref_bg = np.array(ref_bg).astype(np.uint8)
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    for idx, img in enumerate(image_set):
+        img = img.astype(np.uint8)
+        img_original = deepcopy(img)
+        img = img - ref_bg.astype(np.uint8)
+        img_final = apply_rgb_threshold(img, rgb_noisy_bg_threshold)
+        # img_final = opening(img_final, disk(6))
+        # img_final = closing(img_final, disk(2))
+        # img_final = remove_small_holes(img_final, 2000)
+        # img_final = img_final.astype(np.uint8)
+        # img_final = np.logical_not(img_final).astype(np.uint8)
+        # masked_img = cv2.bitwise_and(img_original, img_original, mask=img_final)
+        # img_contours = detect_coin(masked_img, 20, 100, 3)
+        img_path = os.path.join(path, f'img_{idx}')
+        if idx == 5:
+            plt.imshow(img_final, interpolation='nearest')
+        plt.figure()
+        plt.imshow(img_final, interpolation='nearest')
         plt.savefig(img_path)
         plt.close()
