@@ -15,14 +15,21 @@ import cv2 as cv
 # Importing files
 from data_classes.data import Coin
 import pickle_func
+import processing.process_func as pf
 
 class trainCoin(Coin):
     """
     Class to load the training data
     """
     def __init__(self):
+
+        self.ref_bg = {}
+        self.raw_data = {}
+        self.data_index = {}
+
         super().__init__('train')
         self.load_data()
+        self.compute_ref_bg()
 
     def load_data(self):
         """
@@ -31,8 +38,6 @@ class trainCoin(Coin):
         self.data : dict where the key is the class name and the value is a list of images
         self.data_index : dict where the key is the class name and the value is a list of image names
         """
-        self.raw_data = {}
-        self.data_index = {}
 
         success = False
         if os.path.exists(os.path.join(self.path, 'pickle')):
@@ -73,6 +78,18 @@ class trainCoin(Coin):
                     image_names.append(os.path.splitext(filename)[0])
         return images, image_names
     
+    def compute_ref_bg(self):
+        """
+        Compute the reference background for each class
+        """
+        categories = ['hand', 'noisy_bg', 'neutral_bg']
+
+        for category in categories:
+            data = self.raw_data[category] + self.raw_data[f'{category}_outliers']
+            self.ref_bg[category] = pf.calculate_ref_bg(data)
+            self.ref_bg[f'{category}_outliers'] = pf.calculate_ref_bg(data)
+
+    
     def display_img(self, category, index):
         """
         Display the image at the given index
@@ -83,3 +100,10 @@ class trainCoin(Coin):
         img = Image.fromarray(self.raw_data[category][index])
         fig1 = plt.figure(figsize=(10, 10))
         plt.imshow(img)
+
+    def process_images(self):
+        """
+        Process the images to extract the contours
+        """
+        for category in self.raw_data.keys():
+            _ = pf.process_images(self.raw_data[category], self.ref_bg[category], category)

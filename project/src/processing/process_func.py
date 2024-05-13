@@ -9,10 +9,14 @@
 import numpy as np
 import skimage as sk
 import cv2
+import os
 from skimage.measure import regionprops, approximate_polygon
+from skimage.morphology import closing, opening, disk, remove_small_holes, remove_small_objects
+from scipy import ndimage
 
 # Importing files
 import constants
+from bullshit import *
 
 def rgb_to_gray(img):
     """
@@ -151,3 +155,56 @@ def compute_features(imgs: np.ndarray):
     # ------------------
 
     return f_peri, f_area, f_comp, f_rect
+
+def calculate_ref_bg(set_images):
+        imgs_array = np.array(set_images)
+        imgs_mean = np.mean(imgs_array, axis=0)
+        imgs_mean = imgs_mean.astype(np.uint8)
+        return imgs_mean
+
+def process_images(raw_data, ref_bg, category):
+    """
+    Process the images to extract the contours
+    
+    Args:
+        raw_data (dict): Dictionary containing the raw images
+        ref_bg (dict): Dictionary containing the reference background for each class
+    
+    Returns:
+        contours (dict): Dictionary containing the contours for each class
+    """
+    processed_images = []
+    path =  os.path.join(constants.RESULT_PATH, category)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for idx, img in enumerate(raw_data):
+        img = img.astype(np.uint8)
+        img = img - 0.9 * ref_bg
+        img_threshold = apply_rgb_threshold(img, 0, 0, 0)
+        img_closing = closing(img_threshold, disk(2))
+        img_removed_small_holes = remove_small_holes(img_closing, 1000)
+        plt.figure()
+    
+        # Plot the image
+        plt.imshow(img_removed_small_holes, interpolation='nearest', cmap='gray')
+        
+        # Save the figure directly without displaying it
+        img_path = os.path.join(path, f'img_{idx}.png')
+        plt.savefig(img_path)
+        
+        # Close the figure to free up memory
+        plt.close()
+        processed_images.append(img_removed_small_holes)
+    
+    return processed_images
+
+def remove_large_objects(img, max_size):
+    # Label the objects in the image
+    labeled, num_objects = ndimage.label(img)
+    # Get the sizes of the objects
+    sizes = ndimage.sum(img, labeled, range(num_objects + 1))
+    # Create a mask of the objects that are smaller than the max size
+    mask_size = (sizes < max_size) & (sizes > 0)
+    # Remove the large objects
+    img_clean = mask_size[labeled]
+    return img_clean

@@ -44,6 +44,9 @@ try:
 except Exception as e:
     print("An error occured: ", e)
 
+# Path to the results folder
+
+RESULT_PATH = os.path.join(DATA, 'results')
 # ----------------------------------
 # -----  PROCESSING CONST  ---------
 # ----------------------------------
