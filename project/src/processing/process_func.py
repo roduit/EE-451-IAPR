@@ -236,14 +236,19 @@ def get_contours_noisy(image_set, ref_bg, path):
 
     for idx, img in enumerate(image_set_arr):
         img = img.astype(np.uint8)
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        ref_bg = cv.cvtColor(ref_bg, cv.COLOR_BGR2RGB)
         img = img - ref_bg
-        img_thresholded = apply_rgb_threshold(img,rgb_noisy_bg_threshold)
-        img_opening = closing(img_thresholded, disk(2))
-        img_removed_small_holes = remove_small_holes(img_opening, 1000)
+        img_final = apply_rgb_threshold(img,rgb_noisy_bg_threshold)
+        img_final = closing(img_final, disk(3))
+        # img_removed_small_holes = remove_small_holes(img_opening, 1000)
+        # img_removed_small_objects = remove_small_objects(img_removed_small_holes, 1000)
+        #img_closing = closing(img_removed_small_objects, disk(4))
+        
         img_path = os.path.join(path, f'img_{idx}')
-        if idx == 5:
-            plt.imshow(img_removed_small_holes, interpolation='nearest')
+        if idx == 4:
+            plt.imshow(img_final, interpolation='nearest')
         plt.figure()
-        plt.imshow(img_removed_small_holes, interpolation='nearest')
+        plt.imshow(img_final, interpolation='nearest')
         plt.savefig(img_path)
         plt.close()

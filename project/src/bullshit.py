@@ -89,10 +89,10 @@ def rgb_neutral_threshold(data_red, data_green, data_blue):
     return data_red, data_green, data_blue
 
 def rgb_noisy_bg_threshold(data_red, data_green, data_blue):
-    th_red = 170
-    th_green = 240
-    th_blue = 10
-    data_red = (data_red > th_red)
+    th_red = 230
+    th_green = 235
+    th_blue = 0
+    data_red = (data_red < th_red)
     data_green = (data_green > th_green)
     data_blue = (data_blue < th_blue)
 
