@@ -79,16 +79,25 @@ class trainCoin(Coin):
                     image_names.append(os.path.splitext(filename)[0])
         return images, image_names
     
+    # def compute_ref_bg(self):
+    #     """
+    #     Compute the reference background for each class
+    #     """
+    #     categories = ['hand', 'noisy_bg', 'neutral_bg']
+
+    #     for category in categories:
+    #         data = self.raw_data[category] + self.raw_data[f'{category}_outliers']
+    #         self.ref_bg[category] = pf.calculate_ref_bg(data)
+    #         self.ref_bg[f'{category}_outliers'] = pf.calculate_ref_bg(data)
+
     def compute_ref_bg(self):
         """
         Compute the reference background for each class
         """
-        categories = ['hand', 'noisy_bg', 'neutral_bg']
 
-        for category in categories:
-            data = self.raw_data[category] + self.raw_data[f'{category}_outliers']
+        for category in self.raw_data:
+            data = self.raw_data[category]
             self.ref_bg[category] = pf.calculate_ref_bg(data)
-            self.ref_bg[f'{category}_outliers'] = pf.calculate_ref_bg(data)
 
     
     def display_img(self, category, index):
@@ -107,11 +116,15 @@ class trainCoin(Coin):
         Process the images to extract the contours
         """
         hand_category = ['hand', 'hand_outliers']
+        neutral_category = ['neutral_bg', 'neutral_bg_outliers']
         for category in self.raw_data:
             images_set = self.raw_data[category]
             background = self.ref_bg[category]
             path = os.path.join(constants.RESULT_PATH, category)
             if category in hand_category:
                 pf.get_contours_hand(images_set, path)
-            else:
+            elif category in neutral_category:
                 pf.get_contours(images_set, background, path)
+            else:
+                pf.get_contours_noisy(images_set, background, path)
+
