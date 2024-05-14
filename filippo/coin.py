@@ -33,4 +33,4 @@ def detect_coin(img: np.array, min_radius: int, max_radius: int, median_tresh: i
             # Center of the circle
             # cv.circle(img_circles, (i[0], i[1]), 2, (0, 0, 0), 5)
     
-    return img_circles
+    return img_circles, circles[0]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
-# -*- Last revision: 2024-05-03 -*-
+# -*- Last revision: 2024-05-14 -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Class to load data -*-
 
@@ -36,6 +36,7 @@ class Coin(Dataset):
         self.gray_img = []
         self.processed_data = []
         self.threshold = []
+        self.contours = {}
 
 
         valide_types = ['train', 'test', 'ref']

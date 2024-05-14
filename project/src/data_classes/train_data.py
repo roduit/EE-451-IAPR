@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
-# -*- Last revision: 2024-05-03 -*-
+# -*- Last revision: 2024-05-14 (Vincent) -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Class to load data -*-
 
@@ -27,6 +27,8 @@ class trainCoin(Coin):
         self.ref_bg = {}
         self.raw_data = {}
         self.data_index = {}
+        self.image_masked = {}
+        self.coins = {}
 
         super().__init__('train')
         self.load_data()
@@ -122,9 +124,51 @@ class trainCoin(Coin):
             background = self.ref_bg[category]
             path = os.path.join(constants.RESULT_PATH, category)
             if category in hand_category:
-                pf.get_contours_hand(images_set, path)
+                self.contours[category] = pf.get_contours_hand(images_set, path)
             elif category in neutral_category:
-                pf.get_contours(images_set, background, path)
+                self.contours[category] = pf.get_contours(images_set, background, path)
             else:
-                pf.get_contours_noisy(images_set, background, path)
+                self.contours[category] = pf.get_contours_noisy(images_set, background, path)
+    
+    def create_masked_images(self):
+        """
+        Create the masked images
+        """
+        path = os.path.join(constants.RESULT_PATH, 'masked_img')
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        for category in self.raw_data:
+            self.image_masked[category] = []
+            for idx, img in enumerate(self.raw_data[category]):
+                image_name = self.data_index[category][idx]
+                img_path = os.path.join(path, f'{image_name}.png')
+                circles = self.contours[category][idx][0]
+                img_black = pf.detour_coins(img, circles)
+                self.image_masked[category].append(img_black)
+
+                plt.figure()
+                plt.imshow(img_black)
+                plt.savefig(img_path)
+                plt.close()
+    def create_coin_images(self):
+        """
+        Create the images with only the coins
+        """
+        path = os.path.join(constants.RESULT_PATH, 'coin_img')
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        for category in self.image_masked:
+            for idx, img in enumerate(self.image_masked[category]):
+                image_name = self.data_index[category][idx]
+                img_path = os.path.join(path, f'{image_name}_{idx}.png')
+                img_crops = pf.crop_coins(img, self.contours[category][idx][0])
+                self.coins[image_name] = img_crops
+                for idx, coin in enumerate(img_crops):
+                    plt.figure()
+                    plt.imshow(coin)
+                    plt.savefig(img_path)
+                    plt.close()
+                
 
