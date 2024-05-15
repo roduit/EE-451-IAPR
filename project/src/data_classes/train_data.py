@@ -11,6 +11,8 @@ import os
 from PIL import Image
 import matplotlib.pyplot as plt
 import cv2 as cv
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
 # Importing files
 from data_classes.data import Coin
@@ -22,14 +24,17 @@ class trainCoin(Coin):
     """
     Class to load the training data
     """
-    def __init__(self):
+    def __init__(self, save=False):
+
+        self.save = save
 
         self.ref_bg = {}
         self.raw_data = {}
         self.data_index = {}
         self.image_masked = {}
         self.contours = {}
-        self.coins = {}
+        self.coins = []
+        self.coins_labels = []
 
         super().__init__('train')
         self.load_data()
@@ -125,11 +130,11 @@ class trainCoin(Coin):
             background = self.ref_bg[category]
             path = os.path.join(constants.RESULT_PATH, category)
             if category in hand_category:
-                self.contours[category] = pf.get_contours_hand(images_set, path)
+                self.contours[category] = pf.get_contours_hand(images_set, path, self.save)
             elif category in neutral_category:
-                self.contours[category] = pf.get_contours(images_set, background, path)
+                self.contours[category] = pf.get_contours(images_set, background, path, self.save)
             else:
-                self.contours[category] = pf.get_contours_noisy(images_set, background, path)
+                self.contours[category] = pf.get_contours_noisy(images_set, background, path, self.save)
     
     def create_masked_images(self):
         """
@@ -147,11 +152,11 @@ class trainCoin(Coin):
                 circles = self.contours[category][idx][0]
                 img_black = pf.detour_coins(img, circles)
                 self.image_masked[category].append(img_black)
-
-                plt.figure()
-                plt.imshow(img_black)
-                plt.savefig(img_path)
-                plt.close()
+                if self.save:
+                    plt.figure()
+                    plt.imshow(img_black)
+                    plt.savefig(img_path)
+                    plt.close()
     def create_coin_images(self):
         """
         Create the images with only the coins
@@ -159,17 +164,30 @@ class trainCoin(Coin):
         path = os.path.join(constants.RESULT_PATH, 'coin_img')
         if not os.path.exists(path):
             os.makedirs(path)
-
+            
+        coin_images = []
+        coins_labels = []
         for category in self.image_masked:
             for idx, img in enumerate(self.image_masked[category]):
                 image_name = self.data_index[category][idx]
                 img_crops = pf.crop_coins(img, self.contours[category][idx][0])
-                self.coins[image_name] = img_crops
                 for idx, coin in enumerate(img_crops):
+                    coin_name = f'{image_name}_{idx}'
                     img_path = os.path.join(path, f'{image_name}_{idx}.png')
-                    plt.figure()
-                    plt.imshow(coin)
-                    plt.savefig(img_path)
-                    plt.close()
+                    coins_labels.append(coin_name)
+                    coin_images.append((image_name, coin_name, coin))
+                    if self.save:
+                        plt.figure()
+                        plt.imshow(coin)
+                        plt.savefig(img_path)
+                        plt.close()
+        self.coins = coin_images
+        self.coins_labels = coins_labels
+
+        #save labels as xls
+        df = pd.DataFrame(self.coins_labels)
+        df.columns = ['image_name']
+        df.sort_values('image_name', inplace=True)
+        df.to_excel(os.path.join(path, 'coin_labels.xlsx'), index=False)
                 
 

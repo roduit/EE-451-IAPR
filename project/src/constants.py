@@ -7,6 +7,7 @@
 
 # Importing libraries
 import os
+import numpy as np
 
 # ----------------------------------
 # -----    Defining paths  ---------
@@ -47,6 +48,7 @@ except Exception as e:
 # Path to the results folder
 
 RESULT_PATH = os.path.join(DATA, 'results')
+
 # ----------------------------------
 # -----  PROCESSING CONST  ---------
 # ----------------------------------
@@ -62,3 +64,20 @@ ADJ_THRESHOLD = 15
 
 # Contour len
 MIN_CONTOUR_LEN = 1500
+
+# ----------------------------------
+# ---------  MODEL CONST  ----------
+# ----------------------------------
+
+BATCH_SIZE = 1
+
+NUM_WORKERS = 1
+
+RATIO = 0.8
+
+ANGLES_SET = np.linspace(0, 360, 36, endpoint=False)
+
+BLUR_PROB = 0.5
+
+KERNEL_SIZE_SET = [3, 5, 7, 9]
+

@@ -32,7 +32,7 @@ def remove_large_objects(img, max_size):
     img_clean = mask_size[labeled]
     return img_clean
 
-def get_contours(image_set, ref_bg, path):
+def get_contours(image_set, ref_bg, path, save):
     """Get the contours of the coins with neutral background
     Args:
         image_set: list of np.array (M, N, 3) List of images
@@ -51,14 +51,15 @@ def get_contours(image_set, ref_bg, path):
         img_det, contours = detect_coin(imgRGB, min_radius=30, max_radius=100, median_tresh=31, param1=10, param2=30)
         img_path = os.path.join(path, f'img_{idx}')
         contours_list.append(contours)
-        plt.figure()
-        plt.imshow(img_det, interpolation='nearest', cmap='gray')
-        plt.savefig(img_path)
-        plt.close()
+        if save: 
+            plt.figure()
+            plt.imshow(img_det, interpolation='nearest', cmap='gray')
+            plt.savefig(img_path)
+            plt.close()
 
     return contours_list
 
-def get_contours_hand(image_set, path):
+def get_contours_hand(image_set, path, save=False):
     """Get the contours of the coins with hand background
     Args:
         image_set: list of np.array (M, N, 3) List of images
@@ -82,15 +83,16 @@ def get_contours_hand(image_set, path):
         img_final = img_final.astype(np.uint8)
         masked_img = cv2.bitwise_and(img_original, img_original, mask=img_final)
         img_contours, contours = detect_coin(masked_img, 20, 100, 3)
-        plt.figure()
-        plt.imshow(img_contours, interpolation='nearest', cmap='gray')
-        img_path = os.path.join(path, f'img_{idx}.png')
-        plt.savefig(img_path)
-        plt.close()
         contours_list.append(contours)
+        if save:
+            plt.figure()
+            plt.imshow(img_contours, interpolation='nearest', cmap='gray')
+            img_path = os.path.join(path, f'img_{idx}.png')
+            plt.savefig(img_path)
+            plt.close()
     return contours_list
 
-def get_contours_noisy(image_set, ref_bg, path):
+def get_contours_noisy(image_set, ref_bg, path, save=False):
     """Get the contours of the coins with noisy background
     Args:
         image_set: list of np.array (M, N, 3) List of images
@@ -123,11 +125,11 @@ def get_contours_noisy(image_set, ref_bg, path):
 
         # Save the image
         img_path = os.path.join(path, f'img_{idx}.png')
-
-        plt.figure()
-        plt.imshow(img_final, interpolation='nearest', cmap='gray')
-        plt.savefig(img_path)
-        plt.close()
+        if save:
+            plt.figure()
+            plt.imshow(img_final, interpolation='nearest', cmap='gray')
+            plt.savefig(img_path)
+            plt.close()
 
     return contours_list
 
