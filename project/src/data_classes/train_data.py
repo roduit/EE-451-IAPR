@@ -28,6 +28,7 @@ class trainCoin(Coin):
         self.raw_data = {}
         self.data_index = {}
         self.image_masked = {}
+        self.contours = {}
         self.coins = {}
 
         super().__init__('train')
@@ -162,10 +163,10 @@ class trainCoin(Coin):
         for category in self.image_masked:
             for idx, img in enumerate(self.image_masked[category]):
                 image_name = self.data_index[category][idx]
-                img_path = os.path.join(path, f'{image_name}_{idx}.png')
                 img_crops = pf.crop_coins(img, self.contours[category][idx][0])
                 self.coins[image_name] = img_crops
                 for idx, coin in enumerate(img_crops):
+                    img_path = os.path.join(path, f'{image_name}_{idx}.png')
                     plt.figure()
                     plt.imshow(coin)
                     plt.savefig(img_path)
