@@ -138,10 +138,10 @@ def crop_coins(img, circles):
     img_crops = []
 
     for center_coordinates, radius in zip(all_center_coordinates, all_radius):
-        x1 = center_coordinates[0] - radius
-        x2 = center_coordinates[0] + radius
-        y1 = center_coordinates[1] - radius
-        y2 = center_coordinates[1] + radius
+        x1 = (center_coordinates[0] - radius).astype(int)
+        x2 = (center_coordinates[0] + radius).astype(int)
+        y1 = (center_coordinates[1] - radius).astype(int)
+        y2 = (center_coordinates[1] + radius).astype(int)
         img_crop = img[y1:y2, x1:x2]
         img_crops.append(img_crop)
 
