@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
-# -*- Last revision: 2024-05-14 (Vincent) -*-
+# -*- Last revision: 2024-05-17 (Vincent) -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Class to load data -*-
 
 # Importing libraries
-import numpy as np
 import os
-from PIL import Image
 import matplotlib.pyplot as plt
 import cv2 as cv
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 # Importing files
 from data_classes.data import Coin
@@ -24,10 +21,13 @@ class trainCoin(Coin):
     """
     Class to load the training data
     """
-    def __init__(self, save=False):
+    def __init__(self, save=False, load_from_pickle=False):
 
         super().__init__('train')
-
+        
+        self.from_pickle = load_from_pickle
+        self.pickle_path = os.path.join(constants.RESULT_PATH, 'pickles')
+        self.pickle_file_name = 'trainCoin.pkl'
         self.save = save
         self.raw_data = {}
         self.data_index = {}
@@ -46,8 +46,12 @@ class trainCoin(Coin):
         self.data : dict where the key is the class name and the value is a list of images
         self.data_index : dict where the key is the class name and the value is a list of image names
         """
-
         success = False
+        if self.from_pickle:
+            print('Loading class from pickle')
+            self.load_pickle()
+            return
+        
         if os.path.exists(os.path.join(self.path, 'pickle')):
             print('Loading data from pickle files')
             try:
@@ -85,17 +89,6 @@ class trainCoin(Coin):
                     images.append(img)
                     image_names.append(os.path.splitext(filename)[0])
         return images, image_names
-    
-    def display_img(self, category, index):
-        """
-        Display the image at the given index
-        Args:
-            category (str): Category of the image
-            index (int): Index of the image to display
-        """
-        img = Image.fromarray(self.raw_data[category][index])
-        fig1 = plt.figure(figsize=(10, 10))
-        plt.imshow(img)
 
     def process_images(self):
         """
@@ -138,15 +131,17 @@ class trainCoin(Coin):
             
         coin_images = []
         coins_labels = []
+        coins_contours = []
         for category in self.image_masked:
-            for idx, img in enumerate(self.image_masked[category]):
-                image_name = self.data_index[category][idx]
-                img_crops = pf.crop_coins(img, self.contours[category][idx][0])
-                for idx, coin in enumerate(img_crops):
-                    coin_name = f'{image_name}_{idx}'
-                    img_path = os.path.join(path, f'{image_name}_{idx}.png')
+            for idx1, img in enumerate(self.image_masked[category]):
+                image_name = self.data_index[category][idx1]
+                img_crops = pf.crop_coins(img, self.contours[category][idx1][0])
+                for idx2, coin in enumerate(img_crops):
+                    coin_name = f'{image_name}_{idx2}'
+                    img_path = os.path.join(path, f'{image_name}_{idx2}.png')
                     coins_labels.append(coin_name)
                     coin_images.append((image_name, coin_name, coin))
+                    coins_contours.append((image_name, coin_name, self.contours[category][idx1][0][idx2]))
                     if self.save:
                         plt.figure()
                         plt.imshow(coin)
@@ -154,11 +149,43 @@ class trainCoin(Coin):
                         plt.close()
         self.coins = coin_images
         self.coins_labels = coins_labels
+        self.contours = coins_contours
 
         #save labels as xls
         df = pd.DataFrame(self.coins_labels)
         df.columns = ['image_name']
         df.sort_values('image_name', inplace=True)
         df.to_excel(os.path.join(path, 'coin_labels.xlsx'), index=False)
+
+    def proceed_data(self):
+        """
+        Process the data
+        """
+        print('Finding contours')
+        self.process_images()
+        print('Creating masked images')
+        self.create_masked_images()
+        print('Creating coin images')
+        self.create_coin_images()
+        if self.save:
+            print('Saving class')
+            self.save_class()
+
+    def save_class(self):
+        """
+        Save the class as pickle file
+        """
+        if not os.path.exists(self.pickle_path):
+            os.makedirs(self.pickle_path)
+        pickle_func.save_pickle(self, os.path.join(self.pickle_path))
+    
+    def load_pickle(self):
+        """
+        Load the class from pickle
+        """
+        try:
+            self = pickle_func.load_pickle(os.path.join(self.pickle_path, self.pickle_file_name))
+        except Exception as e:
+            raise Exception('Pickle file not found')
                 
 

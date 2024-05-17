@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
-# -*- Last revision: 2024-05-03 -*-
+# -*- Last revision: 2024-17-03 -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Defines all the constants used in the project -*-
 
@@ -75,7 +75,7 @@ NUM_WORKERS = 1
 
 RATIO = 0.8
 
-ANGLES_SET = np.linspace(0, 360, 36, endpoint=False)
+ANGLES_SET = np.linspace(0, 360, 18, endpoint=False)
 
 BLUR_PROB = 0.5
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- author : Vincent Roduit-*-
 # -*- date : 2024-05-15 -*-
-# -*- Last revision: 2024-05-15 (Vincent Roduit)-*-
+# -*- Last revision: 2024-05-17 (Vincent Roduit)-*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Util functions for models -*-
 
@@ -16,6 +16,11 @@ from torch.utils.data import DataLoader
 import constants
 
 def get_classes_conv_table():
+    """Create a conversion table for the classes
+    Returns:
+
+        DataFrame: classes conversion table
+    """
     path_train_labels = os.path.join(constants.DATA, 'train_labels.csv')
     df_train_labels = pd.read_csv(path_train_labels)
     classes = df_train_labels.columns[1:]
@@ -23,12 +28,27 @@ def get_classes_conv_table():
     return classes_conversion_table
 
 def get_coin_labels():
+    """Get the coin labels
+    Returns:
+
+        DataFrame: DF containing the coin labels with the coin name (image_name_idx)
+    """
     coin_labels_path = os.path.join(constants.RESULT_PATH, 'coin_img', 'coin_labels_complete.xlsx')
     coin_labels = pd.read_excel(coin_labels_path)
     coin_labels.dropna(subset=['Label'], inplace=True)
     return coin_labels
 
-def create_data_structure(coins, coin_labels, conversion_table):
+def create_data_structure(coins, contours, coin_labels, conversion_table):
+    """Create the data structure for the model
+    Args:
+    coins (list): list of coins
+    contours (list): list of contours
+    coin_labels (DataFrame): coin labels
+    conversion_table (DataFrame): conversion table for the classes
+    Returns:
+
+        tuple: images, labels, df_images_labels
+    """
     images= []
     images_names = []
     coin_names = []
@@ -39,15 +59,24 @@ def create_data_structure(coins, coin_labels, conversion_table):
             images_names.append(image_name)
             coin_names.append(coin_name)
             images_labels.append(coin_labels[coin_labels['image_name'] == coin_name]['Label'].values[0])
+            
 
     images = pad_images(images)      
     df_images_labels = pd.DataFrame({'image_name': images_names,'coin_name':coin_names, 'label': images_labels})
     df_images_labels['label_int'] = df_images_labels['label'].apply(lambda x: conversion_table[x])
+    df_contours = pd.DataFrame(contours, columns=['image_name', 'coin_name', 'contour'])
+    df_images_labels = df_images_labels.merge(df_contours)
     labels = df_images_labels['label_int'].values
 
     return np.array(images), np.array(labels), df_images_labels
 
 def resize_images(images):
+    """Resize the images to the biggest image
+    Args:
+        images (list): list of images
+
+    Returns:
+        image_resized : list of resized images"""
     #find biggest image 
     biggest_dim = max([image.shape[0] for image in images])
 
@@ -59,6 +88,13 @@ def resize_images(images):
     return images_resized
 
 def pad_images(images):
+    """Pad the images to the biggest image
+    Args:
+        images (list): list of images
+    
+    Returns:
+        images_padded : list of padded images
+    """
 
     # Find the dimensions of the biggest image
     biggest_dim = max(max(image.shape[:2]) for image in images)
@@ -86,6 +122,14 @@ def create_datasets(
         images, 
         labels,  
         ratio=constants.RATIO):
+    """Create training and validation datasets
+    Args:
+        images (list): list of images
+        labels (list): list of labels
+        ratio (float): ratio of the training set
+    Returns:
+        train_images, train_labels, val_images, val_labels
+    """
     
     # Split data into training and validation sets
     split = int(len(images) * ratio)
@@ -101,6 +145,18 @@ def create_dataloader(
         val_labels, 
         batch_size=constants.BATCH_SIZE, 
         num_workers=constants.NUM_WORKERS):
+    """Create dataloaders
+    Args:
+        train_images (list): list of training images
+        train_labels (list): list of training labels
+        val_images (list): list of validation images
+        val_labels (list): list of validation labels
+        batch_size (int): batch size
+        num_workers (int): number of workers
+    
+    Returns:
+        train_dataloader, val_dataloader
+    """
     
     #transpose images for pytorch
     train_images = np.transpose(train_images, (0, 3, 1, 2)).astype(np.float32) / 255

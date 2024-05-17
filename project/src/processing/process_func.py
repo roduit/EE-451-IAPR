@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
-# -*- Last revision: 2024-05-14 (Vincent) -*-
+# -*- Last revision: 2024-05-17 (Vincent) -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Function used for preprocessing images -*-
 
@@ -14,6 +14,15 @@ import os
 from processing.morphology import apply_closing, remove_objects
 
 def detect_contours_single_img(img, path, save):
+    """Detect the contours of the coins in a single image
+    Args:
+        img: np.array (M, N) Image
+        path: str Path to save the image
+        save: bool Save the image or not
+    
+    Returns:
+        circles: np.array (N, 3) Circles coordinates
+    """
 
     std = np.std(cv.cvtColor(255 -img, cv.COLOR_BGR2GRAY))
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
