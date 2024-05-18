@@ -11,55 +11,13 @@ import torch.nn as nn
 import constants
 from sklearn.metrics import f1_score 
 
-class Basic_CNN(nn.Module):
-    def __init__(
-        self,
-        image_size,
-        num_classes,
-    ):
-        """
-        Constructor.
-
-        Layers:
-        - Convolutional layer with 32 filters, kernel size 3, stride 1, padding 1
-        - ReLU activation
-        - Max pooling layer with kernel size 2, stride 2
-        - Convolutional layer with 32 filters, kernel size 3, stride 1, padding 1
-        - ReLU activation
-        - Fully connected layer with num_classes outputs
-        """
-        super(Basic_CNN, self).__init__()
-
-        self.num_classes = num_classes
-        self.image_size = image_size
-
+class CNN(nn.Module):
+    def __init__(self, img_size, num_classes):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.image_size = img_size
+        self.num_classes = num_classes
 
-        self.conv1 = nn.Conv2d(
-            in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1
-        )
-        self.relu1 = nn.LeakyReLU(0.1)
-        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.conv2 = nn.Conv2d(
-            in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1
-        )
-        self.relu2 = nn.LeakyReLU(0.1)
-
-        self.fc = nn.Linear(32 * (self.image_size // 2) * (self.image_size // 2), num_classes)
-
-    def forward(self, x):
-        """Forward pass.
-        Args:
-            x (torch.Tensor): Input tensor.
-        Returns:
-            torch.Tensor: Output tensor.
-        """
-        x = self.pool1(self.relu1(self.conv1(x)))
-        x = self.relu2(self.conv2(x))
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
+        super(CNN, self).__init__()
 
     def train_model(
         self, optimizer, scheduler, train_loader, val_loader, num_epochs=10
@@ -75,7 +33,7 @@ class Basic_CNN(nn.Module):
             num_epochs (int): Number of epochs.
         """
         self.to(self.device)
-        criterion = nn.CrossEntropyLoss()  # Change to CrossEntropyLoss for multiclass classification
+        criterion = nn.CrossEntropyLoss()
         for epoch in range(num_epochs):
             self.train()
             for input, target in train_loader:
@@ -94,7 +52,7 @@ class Basic_CNN(nn.Module):
                 for input, target in val_loader:
                     input, target = input.to(self.device), target.to(self.device)
                     output = self(input)
-                    predictions = output.argmax(dim=1)  # Change to argmax for multiclass classification
+                    predictions = output.argmax(dim=1)
                     total_correct += (predictions == target).sum().item()
                     test_loss += criterion(output, target).item() * len(input)
 
@@ -124,7 +82,141 @@ class Basic_CNN(nn.Module):
             for input in test_loader:
                 input = input.to(self.device)
                 output = self(input)
-                output = output.argmax(dim=1)  # Change to argmax for multiclass classification
+                output = output.argmax(dim=1)
                 predictions.append(output.cpu())
 
         return torch.cat(predictions).numpy().ravel()
+
+
+class Basic_CNN(CNN):
+    def __init__(
+        self,
+    ):
+        """
+        Constructor.
+
+        Layers:
+        - Convolutional layer with 32 filters, kernel size 3, stride 1, padding 1
+        - ReLU activation
+        - Max pooling layer with kernel size 2, stride 2
+        - Convolutional layer with 32 filters, kernel size 3, stride 1, padding 1
+        - ReLU activation
+        - Fully connected layer with num_classes outputs
+        """
+        super(Basic_CNN, self).__init__()
+
+        self.conv1 = nn.Conv2d(
+            in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1
+        )
+        self.relu1 = nn.LeakyReLU(0.1)
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.conv2 = nn.Conv2d(
+            in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1
+        )
+        self.relu2 = nn.LeakyReLU(0.1)
+
+        self.fc = nn.Linear(32 * (self.image_size // 2) * (self.image_size // 2), self.num_classes)
+
+    def forward(self, x):
+        """Forward pass.
+        Args:
+            x (torch.Tensor): Input tensor.
+        Returns:
+            torch.Tensor: Output tensor.
+        """
+        x = self.pool1(self.relu1(self.conv1(x)))
+        x = self.relu2(self.conv2(x))
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+    
+class Advanced_CNN(CNN):
+    def __init__(
+        self,
+
+    ):
+        """
+        Constructor
+
+        Layers:
+        - Convolutional layer with 32 filters, kernel size 3, stride 1, padding 1
+        - ReLU activation
+        - Max pooling layer with kernel size 2, stride 2
+        - Convolutional layer with 32 filters, kernel size 3, stride 1, padding 1
+        - Dropout layer with probability 0.1
+        - ReLU activation
+        - Max pooling layer with kernel size 2, stride 2
+        - Convolutional layer with 64 filters, kernel size 3, stride 1, padding 1
+        - ReLU activation
+        - Max pooling layer with kernel size 2, stride 2
+        - Convolutional layer with 64 filters, kernel size 3, stride 1, padding 1
+        - Dropout layer with probability 0.1
+        - ReLU activation
+        - Max pooling layer with kernel size 2, stride 2
+        - Convolutional layer with 128 filters, kernel size 3, stride 1, padding 1
+        - ReLU activation
+        - Max pooling layer with kernel size 2, stride 2
+        - Convolutional layer with 128 filters, kernel size 3, stride 1, padding 1
+        - Dropout layer with probability 0.1
+        - ReLU activation
+        - Fully connected layer with 1 output
+        """
+        super(Advanced_CNN, self).__init__()
+
+        self.conv1 = nn.Conv2d(
+            in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1
+        )
+        self.relu1 = nn.LeakyReLU(0.1)
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.conv2 = nn.Conv2d(
+            in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1
+        )
+        self.dropout1 = nn.Dropout(0.1)
+        self.relu2 = nn.LeakyReLU(0.1)
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.conv3 = nn.Conv2d(
+            in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1
+        )
+        self.relu3 = nn.LeakyReLU(0.1)
+        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.conv4 = nn.Conv2d(
+            in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1
+        )
+        self.dropout2 = nn.Dropout(0.1)
+        self.relu4 = nn.LeakyReLU(0.1)
+        self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.conv5 = nn.Conv2d(
+            in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1
+        )
+        self.relu5 = nn.LeakyReLU(0.1)
+        self.pool5 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.conv6 = nn.Conv2d(
+            in_channels=128, out_channels=128, kernel_size=3, stride=1, padding=1
+        )
+        self.dropout3 = nn.Dropout(0.1)
+        self.relu6 = nn.LeakyReLU(0.1)
+
+        self.fc = nn.Linear(32 * (self.image_size // 2) * (self.image_size // 2), self.num_classes)
+
+    def forward(self, x):
+        """Forward pass.
+        Args:
+            x (torch.Tensor): Input tensor.
+        Returns:
+            torch.Tensor: Output tensor.
+        """
+        x = self.pool1(self.relu1(self.conv1(x)))
+        x = self.pool2(self.relu2(self.dropout1(self.conv2(x))))
+        x = self.pool3(self.relu3(self.conv3(x)))
+        x = self.pool4(self.relu4(self.dropout2(self.conv4(x))))
+        x = self.pool5(self.relu5(self.conv5(x)))
+        x = self.relu6(self.dropout3(self.conv6(x)))
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
