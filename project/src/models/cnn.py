@@ -220,3 +220,90 @@ class Advanced_CNN(CNN):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
+
+class CnnRadius(CNN):
+    def __init__(self, img_size, num_classes, num_radius_classes):
+        super().__init__(img_size, num_classes)
+        self.num_radius_classes = num_radius_classes
+
+        self.conv_blocks = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+
+        self.fc_layers = nn.Sequential(
+            nn.Linear(256 * 12 * 12, 512),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5)
+        )
+
+        self.fc_output = nn.Linear(512 + num_radius_classes, self.num_classes)
+
+    def forward(self, x, radius):
+        x = self.conv_blocks(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc_layers(x)
+        x = torch.cat((x, radius), dim=1)
+        x = self.fc_output(x)
+        return x
+
+    def train_model(
+    self, optimizer, scheduler, train_loader, val_loader, num_epochs=10):
+      """
+      Train the model.
+
+      Args:
+          optimizer (torch.optim): Optimizer used for training.
+          scheduler (torch.optim.lr_scheduler): Scheduler used for training.
+          train_loader (torch.utils.data.DataLoader): Training data loader.
+          val_loader (torch.utils.data.DataLoader): Validation data loader.
+          num_epochs (int): Number of epochs.
+      """
+      self.to(self.device)
+      criterion = nn.CrossEntropyLoss()
+      for epoch in range(num_epochs):
+          self.train()
+          for input_data, target, radius_info in train_loader:  # Modify the loop to iterate over input_data, target, and radius_info
+              input_data, target, radius_info = input_data.to(self.device), target.to(self.device), radius_info.to(self.device)  # Move input_data, target, and radius_info to device
+              optimizer.zero_grad()
+              output = self(input_data, radius_info)  # Pass input_data and radius_info to the model
+              loss = criterion(output, target)
+              loss.backward()
+              optimizer.step()
+
+          # Validation loop
+          self.eval()
+          with torch.no_grad():
+              total_correct = 0
+              test_loss = 0
+              for input_data, target, radius_info in val_loader:  # Modify the loop to iterate over input_data, target, and radius_info
+                  input_data, target, radius_info = input_data.to(self.device), target.to(self.device), radius_info.to(self.device)  # Move input_data, target, and radius_info to device
+                  output = self(input_data, radius_info)  # Pass input_data and radius_info to the model
+                  predictions = output.argmax(dim=1)
+                  total_correct += (predictions == target).sum().item()
+                  test_loss += criterion(output, target).item() * len(input_data)
+
+              test_loss /= len(val_loader.dataset)
+              accuracy = total_correct / len(val_loader.dataset)
+              print(
+                  f"Epoch {epoch+1}/{num_epochs}, Loss: {test_loss}, Validation Accuracy: {accuracy:.4f}"
+              )
+
+          scheduler.step(test_loss)

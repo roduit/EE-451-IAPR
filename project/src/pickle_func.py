@@ -13,7 +13,7 @@ import os
 # import files
 import constants
 
-def save_pickle(result, file_name="pickle"):
+def save_pickle(result, file_name="pickle", save_path=None):
     """Save a variable in a binary format
 
     Args:
@@ -22,15 +22,16 @@ def save_pickle(result, file_name="pickle"):
 
     Returns:
     """
-    save_pickle_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
-    if not os.path.exists(save_pickle_path):
-        os.makedirs(save_pickle_path)
-    file_path = os.path.join(save_pickle_path, file_name)
+    if save_path is None:
+        save_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+    file_path = os.path.join(save_path, file_name)
     with open(file_path, "wb") as file:
         pickle.dump(result, file)
 
 
-def load_pickle(file_name):
+def load_pickle(file_name, load_path=None):
     """Load a variable from a binary format path
 
     Args:
@@ -39,9 +40,10 @@ def load_pickle(file_name):
     Returns:
         return the content of the file, generally a dataFrame here.
     """
-    load_pickle_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
-    if not os.path.exists(load_pickle_path):
-        os.makedirs(load_pickle_path)
-    file_path = os.path.join(load_pickle_path, file_name)
+    if load_path is None:
+        load_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
+        if not os.path.exists(load_path):
+            os.makedirs(load_path)
+    file_path = os.path.join(load_path, file_name)
     with open(file_path, "rb") as file:
         return pickle.load(file)

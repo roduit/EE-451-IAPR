@@ -40,7 +40,7 @@ def rotate_by_set_angles(image):
     rotated_images = [rotate_image(image, angle) for angle in angles]
     return rotated_images
 
-def augment_set_rotations(train_images, train_labels):
+def augment_set_rotations(train_images, radius, train_labels):
     """
     Augment a set of images by rotating them by a set of angles.
 
@@ -57,6 +57,7 @@ def augment_set_rotations(train_images, train_labels):
 
     train_images_aug = np.zeros((num_images * num_angles, *img_shape), dtype=train_images.dtype)
     train_labels_aug = np.zeros(num_images * num_angles, dtype=train_labels.dtype)
+    train_radius_aug = np.zeros(num_images * num_angles, dtype=radius.dtype)
 
     for idx, img in enumerate(train_images):
         imgs_rotated = rotate_by_set_angles(img)
@@ -64,8 +65,9 @@ def augment_set_rotations(train_images, train_labels):
         end_idx = start_idx + num_angles
         train_images_aug[start_idx:end_idx] = imgs_rotated
         train_labels_aug[start_idx:end_idx] = train_labels[idx]
+        train_radius_aug[start_idx:end_idx] = radius[idx]
 
-    return train_images_aug, train_labels_aug
+    return train_images_aug,train_radius_aug, train_labels_aug
 
 
 def blur_image(image, kernel_size):

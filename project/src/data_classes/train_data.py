@@ -26,8 +26,10 @@ class trainCoin(Coin):
         super().__init__('train')
         
         self.from_pickle = load_from_pickle
-        self.pickle_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
+        self.pickle_path = os.path.join(self.path, 'pickle_files')
         self.pickle_file_name = 'trainCoin.pkl'
+        self.raw_data_pkl_name = 'raw_data.pkl'
+        self.data_index_pkl_name = 'data_index.pkl'
         self.save = save
         self.raw_data = {}
         self.data_index = {}
@@ -51,15 +53,15 @@ class trainCoin(Coin):
             self.load_pickle()
             return
         
-        if os.path.exists(os.path.join(self.path, 'pickle')):
+        if os.path.exists(self.pickle_path):
             print('Loading data from pickle files')
             try:
-                self.raw_data = pickle_func.load_pickle(os.path.join(self.path, 'pickle', 'train.pkl'))
-                self.data_index = pickle_func.load_pickle(os.path.join(self.path, 'pickle', 'train_index.pkl'))
+                self.raw_data = pickle_func.load_pickle(file_name=self.raw_data_pkl_name, load_path=os.path.join(self.pickle_path))
+                self.data_index = pickle_func.load_pickle(file_name=self.data_index_pkl_name, load_path=os.path.join(self.pickle_path))
                 if ((self.raw_data is not None) and (self.data_index is not None)):
                     success = True
             except Exception as e:
-                raise Exception('Pickle files note found')
+                raise Exception('Pickle files not found')
         if not success: 
             print('Loading data from folders')
             folders = os.listdir(self.path)
@@ -70,11 +72,11 @@ class trainCoin(Coin):
                     folder_name = folder_name.strip()
                     self.raw_data[folder_name], self.data_index[folder_name] = self.load_images_from_folder(folder_path)
 
-            if not os.path.exists(os.path.join(self.path, 'pickle')):
-                os.makedirs(os.path.join(self.path, 'pickle'))
-            pickle_func.save_pickle(self.raw_data, os.path.join(self.path, 'pickle', 'train.pkl'))
-            pickle_func.save_pickle(self.data_index, os.path.join(self.path, 'pickle', 'train_index.pkl'))
-            print('Data saved in pickle files')
+            if not os.path.exists(self.pickle_path):
+                os.makedirs(os.path.join(self.pickle_path))
+            pickle_func.save_pickle(result=self.raw_data, file_name=self.raw_data_pkl_name, save_path=self.pickle_path)
+            pickle_func.save_pickle(result=self.data_index, file_name=self.data_index_pkl_name, save_path=self.pickle_path)
+            print(f'Data saved in pickle files at {self.pickle_path}')
 
 
     def load_images_from_folder(self, folder_path):

@@ -66,9 +66,10 @@ def create_data_structure(coins, contours, coin_labels, conversion_table):
     df_images_labels['label_int'] = df_images_labels['label'].apply(lambda x: conversion_table[x])
     df_contours = pd.DataFrame(contours, columns=['image_name', 'coin_name', 'contour'])
     df_images_labels = df_images_labels.merge(df_contours)
+    df_images_labels['radius'] = df_images_labels['contour'].apply(lambda x: x[2])
     labels = df_images_labels['label_int'].values
-
-    return np.array(images), np.array(labels), df_images_labels
+    radius_info = df_images_labels['radius'].values
+    return np.array(images), np.array(radius_info),np.array(labels), df_images_labels
 
 def resize_images(images, size):
     """Resize the images
@@ -115,6 +116,7 @@ def pad_images(images):
 
 def create_splits(
         images, 
+        radius_info,
         labels,  
         ratio=constants.RATIO):
     """Create training and validation datasets
@@ -130,9 +132,10 @@ def create_splits(
     split = int(len(images) * ratio)
     images, labels = np.array(images), np.array(labels)
     train_images, val_images = images[:split], images[split:]
+    train_radius, val_radius = radius_info[:split], radius_info[split:]
     train_labels, val_labels = labels[:split], labels[split:]
 
-    return train_images, train_labels, val_images, val_labels
+    return train_images, train_radius, train_labels, val_images, val_radius, val_labels
 
 # Custom dataset class
 class CoinDataset(Dataset):
@@ -147,12 +150,32 @@ class CoinDataset(Dataset):
         image = self.images[idx]
         label = self.labels[idx]
         return image, label
+    
+class CoinDatasetRadius(Dataset):
+    def __init__(self, images, labels, radius_info):
+        self.images = images
+        self.labels = labels
+        self.radius_info = radius_info
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        image = self.images[idx]
+        label = self.labels[idx]
+        radius = self.radius_info[idx]
+        return image, label, radius
+
+from torch.utils.data import DataLoader
+import numpy as np
 
 def create_dataloader(
         train_images, 
         train_labels, 
         val_images, 
         val_labels, 
+        train_radius=None,
+        val_radius=None,
         batch_size=constants.BATCH_SIZE, 
         num_workers=constants.NUM_WORKERS):
     """Create dataloaders
@@ -161,6 +184,8 @@ def create_dataloader(
         train_labels (list): list of training labels
         val_images (list): list of validation images
         val_labels (list): list of validation labels
+        train_radius (list or None): list of training radius information
+        val_radius (list or None): list of validation radius information
         batch_size (int): batch size
         num_workers (int): number of workers
     
@@ -173,8 +198,12 @@ def create_dataloader(
     val_images = np.transpose(val_images, (0, 3, 1, 2)).astype(np.float32) / 255
 
     # Create datasets
-    train_dataset = CoinDataset(train_images, train_labels)
-    val_dataset = CoinDataset(val_images, val_labels)
+    if train_radius is None:
+        train_dataset = CoinDataset(train_images, train_labels)
+        val_dataset = CoinDataset(val_images, val_labels)
+    else:
+        train_dataset = CoinDatasetRadius(train_images, train_labels, train_radius)
+        val_dataset = CoinDatasetRadius(val_images, val_labels, val_radius)
 
     # Create dataloaders
     train_dataloader = DataLoader(
