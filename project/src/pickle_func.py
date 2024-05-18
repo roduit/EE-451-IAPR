@@ -30,7 +30,7 @@ def save_pickle(result, file_name="pickle"):
         pickle.dump(result, file)
 
 
-def load_pickle(file_path):
+def load_pickle(file_name):
     """Load a variable from a binary format path
 
     Args:
@@ -39,5 +39,9 @@ def load_pickle(file_path):
     Returns:
         return the content of the file, generally a dataFrame here.
     """
+    load_pickle_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
+    if not os.path.exists(load_pickle_path):
+        os.makedirs(load_pickle_path)
+    file_path = os.path.join(load_pickle_path, file_name)
     with open(file_path, "rb") as file:
         return pickle.load(file)

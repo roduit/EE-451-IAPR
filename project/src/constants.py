@@ -69,9 +69,9 @@ MIN_CONTOUR_LEN = 1500
 # ---------  MODEL CONST  ----------
 # ----------------------------------
 
-BATCH_SIZE = 1
+BATCH_SIZE = 32
 
-NUM_WORKERS = 1
+NUM_WORKERS = 8
 
 RATIO = 0.8
 
