@@ -222,9 +222,8 @@ class Advanced_CNN(CNN):
         return x
 
 class CnnRadius(CNN):
-    def __init__(self, img_size, num_classes, num_radius_classes):
+    def __init__(self, img_size, num_classes):
         super().__init__(img_size, num_classes)
-        self.num_radius_classes = num_radius_classes
 
         self.conv_blocks = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -254,12 +253,13 @@ class CnnRadius(CNN):
             nn.Dropout(0.5)
         )
 
-        self.fc_output = nn.Linear(512 + num_radius_classes, self.num_classes)
+        self.fc_output = nn.Linear(512 + 1, self.num_classes)
 
     def forward(self, x, radius):
         x = self.conv_blocks(x)
         x = x.view(x.size(0), -1)
         x = self.fc_layers(x)
+        radius = radius.unsqueeze(1)
         x = torch.cat((x, radius), dim=1)
         x = self.fc_output(x)
         return x
