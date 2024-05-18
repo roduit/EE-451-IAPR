@@ -26,12 +26,11 @@ class trainCoin(Coin):
         super().__init__('train')
         
         self.from_pickle = load_from_pickle
-        self.pickle_path = os.path.join(constants.RESULT_PATH, 'pickles')
+        self.pickle_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
         self.pickle_file_name = 'trainCoin.pkl'
         self.save = save
         self.raw_data = {}
         self.data_index = {}
-        self.ref_bg = {}
         self.image_masked = {}
         self.contours = {}
         self.coins = []
@@ -177,7 +176,7 @@ class trainCoin(Coin):
         """
         if not os.path.exists(self.pickle_path):
             os.makedirs(self.pickle_path)
-        pickle_func.save_pickle(self, os.path.join(self.pickle_path))
+        pickle_func.save_pickle(self, os.path.join(self.pickle_path, self.pickle_file_name))
     
     def load_pickle(self):
         """

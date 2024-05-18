@@ -10,7 +10,7 @@ import os
 import pandas as pd
 import numpy as np
 import cv2 as cv
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 #import files
 import constants
@@ -118,7 +118,7 @@ def pad_images(images):
     
     return images_padded
 
-def create_datasets(
+def create_splits(
         images, 
         labels,  
         ratio=constants.RATIO):
@@ -133,10 +133,25 @@ def create_datasets(
     
     # Split data into training and validation sets
     split = int(len(images) * ratio)
+    images, labels = np.array(images), np.array(labels)
     train_images, val_images = images[:split], images[split:]
     train_labels, val_labels = labels[:split], labels[split:]
 
     return train_images, train_labels, val_images, val_labels
+
+# Custom dataset class
+class CoinDataset(Dataset):
+    def __init__(self, images, labels):
+        self.images = images
+        self.labels = labels
+    
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, idx):
+        image = self.images[idx]
+        label = self.labels[idx]
+        return image, label
 
 def create_dataloader(
         train_images, 
@@ -158,23 +173,27 @@ def create_dataloader(
         train_dataloader, val_dataloader
     """
     
-    #transpose images for pytorch
+    # Transpose and normalize images for PyTorch
     train_images = np.transpose(train_images, (0, 3, 1, 2)).astype(np.float32) / 255
     val_images = np.transpose(val_images, (0, 3, 1, 2)).astype(np.float32) / 255
 
+    # Create datasets
+    train_dataset = CoinDataset(train_images, train_labels)
+    val_dataset = CoinDataset(val_images, val_labels)
+
     # Create dataloaders
     train_dataloader = DataLoader(
-    dataset = list(zip(train_images, train_labels)),
-    batch_size = batch_size,
-    shuffle = False,
-    num_workers = num_workers
+        dataset=train_dataset,
+        batch_size=batch_size,
+        shuffle=True,  # Shuffle training data
+        num_workers=num_workers
     )
 
     val_dataloader = DataLoader(
-        dataset = list(zip(val_images, val_labels)),
-        batch_size = constants.BATCH_SIZE,
-        shuffle = False,
-        num_workers = num_workers
-        )
+        dataset=val_dataset,
+        batch_size=batch_size,  # Use the provided batch_size
+        shuffle=False,
+        num_workers=num_workers
+    )
 
     return train_dataloader, val_dataloader

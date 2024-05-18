@@ -6,9 +6,14 @@
 # -*- python version : 3.9.18 -*-
 # -*- Description: Function to save results as pickle -*-
 
+# import libraries
 import pickle
+import os
 
-def save_pickle(result, file_path="pickle"):
+# import files
+import constants
+
+def save_pickle(result, file_name="pickle"):
     """Save a variable in a binary format
 
     Args:
@@ -17,6 +22,10 @@ def save_pickle(result, file_path="pickle"):
 
     Returns:
     """
+    save_pickle_path = os.path.join(constants.RESULT_PATH, 'pickle_files')
+    if not os.path.exists(save_pickle_path):
+        os.makedirs(save_pickle_path)
+    file_path = os.path.join(save_pickle_path, file_name)
     with open(file_path, "wb") as file:
         pickle.dump(result, file)
 

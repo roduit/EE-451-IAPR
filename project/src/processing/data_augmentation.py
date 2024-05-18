@@ -45,21 +45,28 @@ def augment_set(train_images, train_labels):
     Augment a set of images by rotating them by a set of angles.
 
     Args:
-        images (list): List of images to augment.
+        train_images (list or np.ndarray): List or array of images to augment.
+        train_labels (list or np.ndarray): List or array of labels corresponding to the images.
 
     Returns:
-        list: List of augmented images.
+        tuple: Tuple containing arrays of augmented images and corresponding labels.
     """
-    train_images_aug = []
-    train_labels_aug = []
+    num_angles = len(constants.ANGLES_SET)
+    num_images = len(train_images)
+    img_shape = train_images[0].shape
+
+    train_images_aug = np.zeros((num_images * num_angles, *img_shape), dtype=train_images.dtype)
+    train_labels_aug = np.zeros(num_images * num_angles, dtype=train_labels.dtype)
+
     for idx, img in enumerate(train_images):
-        imgs_rotated = np.array(rotate_by_set_angles(img))
-        labels = (np.ones(len(imgs_rotated)) * train_labels[idx])
-        train_labels_aug = np.append(train_labels_aug, labels).astype(int)
-        imgs_rotated = np.array([img for img in imgs_rotated])
-        train_images_aug.extend(imgs_rotated)
-    
+        imgs_rotated = rotate_by_set_angles(img)
+        start_idx = idx * num_angles
+        end_idx = start_idx + num_angles
+        train_images_aug[start_idx:end_idx] = imgs_rotated
+        train_labels_aug[start_idx:end_idx] = train_labels[idx]
+
     return train_images_aug, train_labels_aug
+
 
 def blur_image(image, kernel_size):
     """
