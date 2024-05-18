@@ -21,16 +21,14 @@ class trainCoin(Coin):
     """
     Class to load the training data
     """
-    def __init__(self, save=False, load_from_pickle=False):
+    def __init__(self, save=False,load_from_pickle=False):
 
-        super().__init__('train')
+        super().__init__(type='train', save=save)
         
         self.from_pickle = load_from_pickle
-        self.pickle_path = os.path.join(self.path, 'pickle_files')
         self.pickle_file_name = 'trainCoin.pkl'
         self.raw_data_pkl_name = 'raw_data.pkl'
         self.data_index_pkl_name = 'data_index.pkl'
-        self.save = save
         self.raw_data = {}
         self.data_index = {}
         self.image_masked = {}
@@ -97,14 +95,14 @@ class trainCoin(Coin):
         """
         for category in self.raw_data:
             images_set = self.raw_data[category]
-            path = os.path.join(constants.RESULT_PATH, category)
+            path = os.path.join(constants.RESULT_PATH,self.type,'contours', category)
             self.contours[category] = pf.detect_contours(images_set, path, self.save)
     
     def create_masked_images(self):
         """
         Create the masked images
         """
-        path = os.path.join(constants.RESULT_PATH, 'masked_img')
+        path = os.path.join(constants.RESULT_PATH,self.type, 'masked_img')
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -126,7 +124,7 @@ class trainCoin(Coin):
         """
         Create the images with only the coins
         """
-        path = os.path.join(constants.RESULT_PATH, 'coin_img')
+        path = os.path.join(constants.RESULT_PATH,self.type, 'coin_img')
         if not os.path.exists(path):
             os.makedirs(path)
             
@@ -168,25 +166,5 @@ class trainCoin(Coin):
         self.create_masked_images()
         print('Creating coin images')
         self.create_coin_images()
-        if self.save:
-            print('Saving class')
-            self.save_class()
-
-    def save_class(self):
-        """
-        Save the class as pickle file
-        """
-        if not os.path.exists(self.pickle_path):
-            os.makedirs(self.pickle_path)
-        pickle_func.save_pickle(self, os.path.join(self.pickle_path, self.pickle_file_name))
-    
-    def load_pickle(self):
-        """
-        Load the class from pickle
-        """
-        try:
-            self = pickle_func.load_pickle(os.path.join(self.pickle_path, self.pickle_file_name))
-        except Exception as e:
-            raise Exception('Pickle file not found')
                 
 

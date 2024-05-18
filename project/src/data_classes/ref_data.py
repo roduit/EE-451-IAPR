@@ -15,29 +15,8 @@ class refCoin(Coin):
     """
     Class to load the reference data
     """
-    def __init__(self):
-        super().__init__('ref')
+    def __init__(self, save=False):
+
+        super().__init__(type='ref', save=save)
+        
         self.load_data()
-
-        self.gray_imgs = []
-        self.thresholds = []
-        self.th_imgs = []
-    
-    def create_gray_imgs(self):
-        for img in self.raw_data:
-            gray_img = pf.rgb_to_gray(img)
-            filtered_img = pf.apply_median(gray_img) * 255
-            self.gray_imgs.append(filtered_img)
-
-    def find_thresholds(self):
-        self.threshold = []
-        for img in self.gray_imgs:
-            img_th, threshold = pf.find_threshold(img)
-            self.th_imgs.append(img_th)
-            self.thresholds.append(threshold)
-
-    def create_contours(self):
-        for img in self.th_imgs:
-            closed_img = morph.apply_opening(img, constants.DISK_SIZE)
-            self.processed_data.append(closed_img)
-        self.contours = pf.find_contour(self.processed_data)

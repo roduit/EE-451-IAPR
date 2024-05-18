@@ -10,79 +10,162 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 import os
+
 # Importing files
 from processing.morphology import apply_closing, remove_objects
 
-def detect_contours_single_img(img, path, save):
-    """Detect the contours of the coins in a single image
-    Args:
-        img: np.array (M, N) Image
-        path: str Path to save the image
-        save: bool Save the image or not
-    
-    Returns:
-        circles: np.array (N, 3) Circles coordinates
-    """
 
-    std = np.std(cv.cvtColor(255 -img, cv.COLOR_BGR2GRAY))
+def enhance_blue_channel(image):
+    """
+    Enhance the blue channel and suppress other channels.
+
+    Args
+    ----
+    image: np.ndarray (M, N, 3)
+        BGR image of size MxN.
+
+    Return
+    ------
+    enhanced_image: np.ndarray (M, N, 3)
+        Image with enhanced blue channel
+    """
+    enhanced_image = image.copy()
+    enhanced_image[:,:,0] = np.clip(image[:,:,0] * 1.3, 0, 255)  # Enhance Blue channel
+    enhanced_image[:,:,2] = np.clip(image[:,:,2] * 1, 0, 255)  # Suppress Red channel
+    enhanced_image[:,:,1] = np.clip(image[:,:,1] * 1, 0, 255)  # Suppress Green channel
+
+    return enhanced_image
+
+def calculate_compactness(contour):
+    perimeter = cv.arcLength(contour, True)
+    area = cv.contourArea(contour)
+    if area == 0:
+        return 0
+    compactness = (perimeter ** 2) / (4 * np.pi * area)
+    return compactness
+
+def generate_mask(img):
+
+    image_mask = img.copy()
+    image_mask = cv.cvtColor(image_mask, cv.COLOR_RGB2BGR)
+
+    lower_blue_range = [30, 80, 80]  # Lower bound of the HSV range for blue 20, 80, 80
+    upper_blue_range = [160, 255, 255]  # Upper bound of the HSV range for blue
+    
+    enhanced_image = enhance_blue_channel(image_mask)
+    
+    # Convert to HSV color space
+    #hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define the lower and upper range of the blue color in HSV
+    lower_range = np.array(lower_blue_range, dtype=np.uint8)
+    upper_range = np.array(upper_blue_range, dtype=np.uint8)
+    
+    # Create a mask that identifies the blue coins
+    mask = cv.inRange(enhanced_image, lower_range, upper_range)
+
+    # Apply opening to the mask
+    mask = np.uint8(remove_objects(mask, 100) * 255)
+
+    kernel = np.ones((2, 2), np.uint8)
+    mask = cv.morphologyEx(mask, cv.MORPH_OPEN, kernel)
+
+    # apply closing to the mask
+    kernel = np.ones((7, 7), np.uint8)
+    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel)
+
+    # Apply Gaussian blur to the mask
+    mask = cv.GaussianBlur(mask, (13, 13), 0)
+
+    circles = cv.HoughCircles(mask, cv.HOUGH_GRADIENT, dp=1, minDist=50, param1=10, param2=25, minRadius=40, maxRadius=120) # 32
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+        for i in circles[0, :]:
+            cv.circle(image_mask, (i[0], i[1]), i[2], (0, 0, 0), 2)
+    
+    image_mask = cv.cvtColor(image_mask, cv.COLOR_BGR2RGB)
+
+    return image_mask
+
+
+def detect_contours_single_img(img, path, save, size = 45):
+
+    std = np.std(cv.cvtColor(255 - img, cv.COLOR_BGR2GRAY))
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
     img = cv.resize(img, (0,0), fx=0.25, fy=0.25)
     img_copy = img.copy()
 
-    img[:,:,0] = img[:,:,0]*0.2 #red
-    img[:,:,1] = img[:,:,1]*0.2 #green
-    img[:,:,2] = img[:,:,2]*1 #blue 
+    # canny edge detection
+    img_edges_std = np.std(cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200))
+    #img_edges_mean = np.mean(cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200))
 
-    red_mean = np.mean(img_copy[:,:,0]) 
-
-    imgGray = cv.cvtColor(255 - img, cv.COLOR_BGR2GRAY)
+    # calculate the compactness of the image
+    img_edges = cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200)
+    contours, _ = cv.findContours(img_edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    compactness = 0
+    for contour in contours:
+        compactness += calculate_compactness(contour)
 
     if std < 18: #neutral
+        title = "Neutral"
         remove_objects_size = 10
         thres2 = 1
         sigma = 2.7
         p2 = 32
-        th_sigma = 2
+        th_sigma = 2.5
         open_th = 3
     
-    else: #hand
+    else:
         remove_objects_size = 120
-        if red_mean > 184:
-            thres2 = 4
+        if img_edges_std < 50: #hand
+            title = "Hand"
+            thres2 = 3
             sigma = 2.7
-            p2 = 32
-            th_sigma = 2.5
-            open_th = 6
+            p2 = 38
+            th_sigma = 2.7 # 2.7
+            open_th = 6 # 6
         else: # noisy
-            thres2 = 1
-            sigma = 2.7
-            p2 = 31
-            th_sigma = 1.8
-            open_th = 4
+            title = "Noisy"
+            thres2 = 2 # 1
+            sigma = 2.7 # 2.7
+            p2 = 32 # 30
+            th_sigma = 2.2 # 2.2
+            open_th = 5 # 3
+    
+    if title == "Noisy":
+        img = generate_mask(img)
 
-    low_pass = cv.GaussianBlur(imgGray, (45, 45), sigma)
-    high_pass = cv.subtract(imgGray, low_pass) 
+    #print(idx, " -", title, ": edges_std:", img_edges_std, "edges_mean:", img_edges_mean, "compactness:", compactness)
+
+    img[:,:,0] = img[:,:,0]*0.25 #red
+    img[:,:,1] = img[:,:,1]*0.25 #green
+    img[:,:,2] = img[:,:,2]*1 #blue 
+
+    imgGray = cv.cvtColor(255 - img, cv.COLOR_BGR2GRAY)
+
+    low_pass = cv.GaussianBlur(imgGray, (size, size), sigma)
+    high_pass = cv.subtract(imgGray, low_pass)
     _, thresholded = cv.threshold(high_pass, thres2, 255, cv.THRESH_BINARY)
 
+    #thresholded = np.uint8(remove_objects(thresholded, 16) * 255)
     thresholded = np.uint8(remove_objects(thresholded,remove_objects_size) * 255)
     thresholded_open = apply_closing(thresholded, open_th) # 3
-    thresholded_open = cv.GaussianBlur(thresholded_open, (45, 45), th_sigma) # 2
+    thresholded_open = cv.GaussianBlur(thresholded_open, (size, size), th_sigma) # 2
 
     circles = cv.HoughCircles(thresholded_open, cv.HOUGH_GRADIENT, dp=1, minDist=50, param1=15, param2=p2, minRadius=40, maxRadius=120) # 32
     if save and circles is not None:
         circles = np.uint16(np.around(circles))
         for i in circles[0, :]:
             cv.circle(img_copy, (i[0], i[1]), i[2], (0, 0, 0), 10)
-        
         #save figure
         plt.figure()
         plt.imshow(img_copy, interpolation='nearest', cmap='gray')
         plt.savefig(path)
         plt.close()
-        
 
     return circles
 
+# apply the function to all the images in the folder
 def detect_contours(imgs, path, save):
     """Detect the contours of the coins in the images
     Args:
@@ -132,26 +215,32 @@ def detour_coins(img, circles):
 
     return img_black
 
+import numpy as np
+
 def crop_coins(img, circles):
-    """Crop the coins from the image
+    """Crop the coins from the image.
     Args:
-        img: np.array (M, N) Image
+        img: np.array (H, W, C) Image
         circles: np.array (N, 3) Circles coordinates
     
     Returns:
-        img_crops: list of np.array (M, N) List of cropped images
+        img_crops: list of np.array (h, w, C) List of cropped images
     """
-    all_center_coordinates = circles[:,:2] * 4
-    all_radius = circles[:,2] * 4
+    all_center_coordinates = circles[:, :2] * 4
+    all_radius = circles[:, 2] * 4
 
     img_crops = []
+    img_height, img_width = img.shape[:2]
 
     for center_coordinates, radius in zip(all_center_coordinates, all_radius):
-        x1 = (center_coordinates[0] - radius).astype(int)
-        x2 = (center_coordinates[0] + radius).astype(int)
-        y1 = (center_coordinates[1] - radius).astype(int)
-        y2 = (center_coordinates[1] + radius).astype(int)
-        img_crop = img[y1:y2, x1:x2]
-        img_crops.append(img_crop)
+        x1 = max(int(center_coordinates[0] - radius), 0)
+        x2 = min(int(center_coordinates[0] + radius), img_width)
+        y1 = max(int(center_coordinates[1] - radius), 0)
+        y2 = min(int(center_coordinates[1] + radius), img_height)
+        
+        # Ensure the dimensions are valid (x2 > x1 and y2 > y1)
+        if x2 > x1 and y2 > y1:
+            img_crop = img[y1:y2, x1:x2]
+            img_crops.append(img_crop)
 
     return img_crops

@@ -12,6 +12,9 @@ class testCoin(Coin):
     """
     Class to load the test data
     """
-    def __init__(self):
-        super().__init__('test')
+    def __init__(self, save=False):
+
+        super().__init__(type='test', save=save)
+
         self.load_data()
+    
