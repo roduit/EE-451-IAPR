@@ -70,22 +70,17 @@ def create_data_structure(coins, contours, coin_labels, conversion_table):
 
     return np.array(images), np.array(labels), df_images_labels
 
-def resize_images(images):
-    """Resize the images to the biggest image
+def resize_images(images, size):
+    """Resize the images
     Args:
         images (list): list of images
-
+        size (tuple): size of the images
     Returns:
-        image_resized : list of resized images"""
-    #find biggest image 
-    biggest_dim = max([image.shape[0] for image in images])
 
-    images_resized = []
-    for img in images:
-        #resize image
-        img = cv.resize(img, (biggest_dim, biggest_dim))
-        images_resized.append(img)
-    return images_resized
+        np.array: resized images
+    """
+    resized_images = [cv.resize(image, (size,size)) for image in images]
+    return np.array(resized_images)
 
 def pad_images(images):
     """Pad the images to the biggest image
