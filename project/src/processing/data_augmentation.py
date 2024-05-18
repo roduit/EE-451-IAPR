@@ -40,7 +40,7 @@ def rotate_by_set_angles(image):
     rotated_images = [rotate_image(image, angle) for angle in angles]
     return rotated_images
 
-def augment_set(train_images, train_labels):
+def augment_set_rotations(train_images, train_labels):
     """
     Augment a set of images by rotating them by a set of angles.
 
