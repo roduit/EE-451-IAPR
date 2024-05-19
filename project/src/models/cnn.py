@@ -8,7 +8,6 @@
 # import libraries
 import torch
 import torch.nn as nn
-import constants
 from sklearn.metrics import f1_score 
 
 class CNN(nn.Module):
@@ -307,3 +306,26 @@ class CnnRadius(CNN):
               )
 
           scheduler.step(test_loss)
+    
+    def predict(self, test_loader):
+        """
+        Compute predictions on the test set.
+
+        Args:
+            test_loader (torch.utils.data.DataLoader): Test data loader.
+
+        Returns:
+            predictions (np.ndarray): Predictions on the test set.
+        """
+        self.eval()
+        predictions = []
+        device = next(self.parameters()).device
+
+        with torch.no_grad():
+            for input_data, radius_info in test_loader:
+                input_data, radius_info = input_data.to(self.device), radius_info.to(self.device)
+                output = self(input_data, radius_info)
+                output = output.argmax(dim=1)
+                predictions.append(output.cpu())
+
+        return torch.cat(predictions).numpy().ravel()

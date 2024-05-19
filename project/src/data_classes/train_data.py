@@ -14,7 +14,7 @@ import pandas as pd
 # Importing files
 from data_classes.data import Coin
 import pickle_func
-import processing.process_func as pf
+import pre_processing.process_func as pf
 import constants
 
 class trainCoin(Coin):
@@ -35,6 +35,7 @@ class trainCoin(Coin):
         self.contours = {}
         self.coins = []
         self.coins_labels = []
+        self.contours_tuple = []
 
         self.load_data()
 
@@ -148,7 +149,7 @@ class trainCoin(Coin):
                         plt.close()
         self.coins = coin_images
         self.coins_labels = coins_labels
-        self.contours = coins_contours
+        self.contours_tuple = coins_contours
 
         #save labels as xls
         df = pd.DataFrame(self.coins_labels)

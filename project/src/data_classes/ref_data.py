@@ -7,10 +7,6 @@
 
 # Importing files
 from data_classes.data import Coin
-import processing.process_func as pf
-import processing.morphology as morph
-import constants
-
 class refCoin(Coin):
     """
     Class to load the reference data

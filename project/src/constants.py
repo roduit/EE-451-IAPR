@@ -81,3 +81,5 @@ BLUR_PROB = 0.5
 
 KERNEL_SIZE_SET = [3, 5, 7, 9]
 
+IMG_SIZE = 200
+
