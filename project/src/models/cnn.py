@@ -90,6 +90,8 @@ class CNN(nn.Module):
 class Basic_CNN(CNN):
     def __init__(
         self,
+        img_size,
+        num_classes,
     ):
         """
         Constructor.
@@ -102,7 +104,7 @@ class Basic_CNN(CNN):
         - ReLU activation
         - Fully connected layer with num_classes outputs
         """
-        super(Basic_CNN, self).__init__()
+        super(Basic_CNN, self).__init__(img_size, num_classes)
 
         self.conv1 = nn.Conv2d(
             in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1

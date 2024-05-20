@@ -65,3 +65,17 @@ def create_dataloader(
     )
 
     return train_dataloader, val_dataloader
+
+def create_test_dataloader(test_imgs, radius_info=None):
+    if radius_info is None:
+      test_dataset = CoinTestDataset(test_imgs)
+    else:
+      test_dataset = CoinTestDatasetRadius(test_imgs, radius_info)
+
+    test_dataloader = DataLoader(
+        dataset=test_dataset,
+        batch_size=constants.BATCH_SIZE,  # Use the provided batch_size
+        shuffle=False,
+        num_workers=constants.NUM_WORKERS
+    )
+      return test_dataloader
