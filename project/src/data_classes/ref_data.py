@@ -7,6 +7,7 @@
 
 # Importing files
 from data_classes.data import Coin
+
 class refCoin(Coin):
     """
     Class to load the reference data

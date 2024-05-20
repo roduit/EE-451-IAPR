@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import os
 
 # Importing files
-from processing.morphology import apply_closing, remove_objects
+from pre_processing.morphology import apply_closing, remove_objects
 
 
 def enhance_blue_channel(image):

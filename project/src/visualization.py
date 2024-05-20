@@ -29,8 +29,8 @@ def display_gray(original, img):
 
     plt.show()
 
-def save_coins_classified(df_images_labels, images):
-    classification_path = os.path.join(constants.RESULT_PATH, 'coins_classified')
+def save_coins_classified(df_images_labels, images, type='train'):
+    classification_path = os.path.join(constants.RESULT_PATH, type, 'coins_classified')
 
     for category in df_images_labels['label'].unique():
         category_for_path = category.replace('.', '_')
