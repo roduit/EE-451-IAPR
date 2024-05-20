@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 
 # Import files
-from post_processing.datasets import CoinDataset, CoinDatasetRadius
+from post_processing.datasets import *
 import constants
 
 def create_dataloader(
@@ -78,4 +78,5 @@ def create_test_dataloader(test_imgs, radius_info=None):
         shuffle=False,
         num_workers=constants.NUM_WORKERS
     )
-      return test_dataloader
+    
+    return test_dataloader
