@@ -42,5 +42,8 @@ def create_submission_file(predictions, df_test_images, conversion_table):
     cols = [x.strip() for x in cols]
     df_test_images = df_test_images[cols]
 
+    # Save the dataframe
+    df_test_images.to_csv(os.path.join(constants.RESULT_PATH, 'submission.csv'), index=False)
+
     return df_test_images
 
