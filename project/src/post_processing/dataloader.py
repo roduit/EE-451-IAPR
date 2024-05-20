@@ -67,6 +67,7 @@ def create_dataloader(
     return train_dataloader, val_dataloader
 
 def create_test_dataloader(test_imgs, radius_info=None):
+    test_imgs = np.transpose(test_imgs, (0, 3, 1, 2)).astype(np.float32) / 255
     if radius_info is None:
       test_dataset = CoinTestDataset(test_imgs)
     else:

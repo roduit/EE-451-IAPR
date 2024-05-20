@@ -135,6 +135,8 @@ class Basic_CNN(CNN):
 class Advanced_CNN(CNN):
     def __init__(
         self,
+        img_size,
+        num_classes,
 
     ):
         """
@@ -163,7 +165,7 @@ class Advanced_CNN(CNN):
         - ReLU activation
         - Fully connected layer with 1 output
         """
-        super(Advanced_CNN, self).__init__()
+        super(Advanced_CNN, self).__init__(img_size, num_classes)
 
         self.conv1 = nn.Conv2d(
             in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1
@@ -203,7 +205,7 @@ class Advanced_CNN(CNN):
         self.dropout3 = nn.Dropout(0.1)
         self.relu6 = nn.LeakyReLU(0.1)
 
-        self.fc = nn.Linear(32 * (self.image_size // 2) * (self.image_size // 2), self.num_classes)
+        self.fc = nn.Linear(128 * (self.image_size // 32) * (self.image_size // 32), self.num_classes)
 
     def forward(self, x):
         """Forward pass.
@@ -219,6 +221,7 @@ class Advanced_CNN(CNN):
         x = self.pool5(self.relu5(self.conv5(x)))
         x = self.relu6(self.dropout3(self.conv6(x)))
         x = x.view(x.size(0), -1)
+
         x = self.fc(x)
         return x
 
