@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# -*- authors : Vincent Roduit -*-
+# -*- authors : Filippo Quadri -*-
 # -*- date : 2024-05-03 -*-
-# -*- Last revision: 2024-05-03 -*-
+# -*- Last revision: 2024-05-03 (Filippo Quadri) -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Functions for morphological transformations -*-
 
