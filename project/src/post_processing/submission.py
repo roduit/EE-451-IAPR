@@ -12,7 +12,7 @@ import os
 #Import files 
 import constants
 
-def create_submission_file(predictions, df_test_images, conversion_table):
+def create_submission_file(predictions, df_test_images, conversion_table, name='submission.csv'):
     """
     Create the submission file
     
@@ -43,7 +43,7 @@ def create_submission_file(predictions, df_test_images, conversion_table):
     df_test_images = df_test_images[cols]
 
     # Save the dataframe
-    df_test_images.to_csv(os.path.join(constants.RESULT_PATH, 'submission.csv'), index=False)
+    df_test_images.to_csv(os.path.join(constants.RESULT_PATH, name), index=False)
 
     return df_test_images
 
