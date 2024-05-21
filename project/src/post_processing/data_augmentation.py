@@ -84,7 +84,7 @@ def blur_image(image, kernel_size):
     return cv.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
 
-def augment_blur(train_images, train_labels, blur_prob=constants.BLUR_PROB):
+def augment_blur(train_images, train_radius, train_labels, blur_prob=constants.BLUR_PROB):
     """
     Augment a set of images by applying a Gaussian blur.
 
@@ -98,6 +98,7 @@ def augment_blur(train_images, train_labels, blur_prob=constants.BLUR_PROB):
     """
     train_images_aug = []
     train_images_labels = []
+    train_images_radius = []
 
     for idx, img in enumerate(train_images):
         if np.random.rand() < blur_prob:
@@ -106,8 +107,91 @@ def augment_blur(train_images, train_labels, blur_prob=constants.BLUR_PROB):
             train_images_aug.append(img_blurred)
             train_images_aug.append(img)
             train_images_labels.extend([train_labels[idx]] * 2)
+            train_images_radius.extend([train_radius[idx]] * 2)
         else:
             train_images_aug.append(img)
             train_images_labels.append(train_labels[idx])
+            train_images_radius.append(train_radius[idx])
 
-    return train_images_aug, train_images_labels
+    return train_images_aug, train_images_radius, train_images_labels
+
+def augment_gamma_correction(train_images, train_radius, train_labels):
+    """
+    Augment a set of images by applying gamma correction.
+
+    Args:
+        train_images (list): List of images to augment.
+        train_labels (list): List of labels corresponding to the images.
+
+    Returns:
+        list: List of augmented images.
+    """
+    train_images_aug = []
+    train_images_labels = []
+    train_images_radius = []
+
+    for idx, img in enumerate(train_images):
+        if np.random.rand() < constants.GAMMA_CORRECTION_PROB:
+            gamma = np.random.choice(constants.GAMMA_SET)
+            img_corrected = gamma_correction(img, gamma)
+            train_images_aug.append(img_corrected)
+            train_images_aug.append(img)
+            train_images_labels.extend([train_labels[idx]] * 2)
+            train_images_radius.extend([train_radius[idx]] * 2)
+        else:
+            gamma = np.random.choice(constants.GAMMA_SET)
+            img_corrected = gamma_correction(img, gamma)
+            train_images_aug.append(img_corrected)
+            train_images_labels.append(train_labels[idx])
+            train_images_radius.append(train_radius[idx])
+
+    return train_images_aug, train_images_radius, train_images_labels
+
+def augment_histogram_equalization(train_images, train_radius, train_labels):
+    """
+    Augment a set of images by applying histogram equalization.
+
+    Args:
+        train_images (list): List of images to augment.
+        train_labels (list): List of labels corresponding to the images.
+
+    Returns:
+        list: List of augmented images.
+    """
+    train_images_aug = []
+    train_images_labels = []
+    train_images_radius = []
+    for idx, img in enumerate(train_images):
+        if np.random.rand() < constants.HISTO_PROB:
+            img_equalized = histogram_equalization(img)
+            train_images_aug.append(img_equalized)
+            train_images_aug.append(img)
+            train_images_labels.extend([train_labels[idx]] * 2)
+            train_images_radius.extend([train_radius[idx]] * 2)
+        else:
+            train_images_aug.append(img)
+            train_images_labels.append(train_labels[idx])
+            train_images_radius.append(train_radius[idx])
+
+    return train_images_aug, train_images_radius, train_images_labels
+
+
+def histogram_equalization(image):
+    # Convert to YUV color space
+    img_yuv = cv.cvtColor(image, cv.COLOR_BGR2YUV)
+    
+    # Apply histogram equalization to the Y channel
+    img_yuv[:, :, 0] = cv.equalizeHist(img_yuv[:, :, 0])
+    
+    # Convert back to BGR color space
+    equalized_image = cv.cvtColor(img_yuv, cv.COLOR_YUV2BGR)
+    return equalized_image
+
+def gamma_correction(image, gamma=1.0):
+    # Ensure the input is a numpy array
+    if not isinstance(image, np.ndarray):
+        image = np.array(image)
+    
+    inv_gamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in range(256)]).astype("uint8")
+    return cv.LUT(image, table)

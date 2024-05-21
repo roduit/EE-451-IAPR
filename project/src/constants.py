@@ -94,9 +94,15 @@ RATIO = 0.8
 
 ANGLES_SET = np.linspace(0, 360, 18, endpoint=False)
 
-BLUR_PROB = 0.5
+BLUR_PROB = 0.2
+
+HISTO_PROB = 0.2
+
+GAMMA_CORRECTION_PROB = 0.5
 
 KERNEL_SIZE_SET = [3, 5, 7, 9]
 
-IMG_SIZE = 400
+GAMMA_SET = [0.5, 0.8, 1.2, 1.5] 
+
+IMG_SIZE = 300
 
