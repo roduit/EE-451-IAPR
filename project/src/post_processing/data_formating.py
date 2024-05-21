@@ -32,7 +32,7 @@ def get_coin_labels():
 
         DataFrame: DF containing the coin labels with the coin name (image_name_idx)
     """
-    coin_labels_path = os.path.join(constants.RESULT_PATH, 'coin_img', 'coin_labels_complete.xlsx')
+    coin_labels_path = os.path.join(constants.RESULT_PATH,'train', 'coin_img', 'coin_labels_complete.xlsx')
     coin_labels = pd.read_excel(coin_labels_path)
     coin_labels.dropna(subset=['Label'], inplace=True)
     return coin_labels
