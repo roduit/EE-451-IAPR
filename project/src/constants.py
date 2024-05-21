@@ -46,8 +46,22 @@ except Exception as e:
     print("An error occured: ", e)
 
 # Path to the results folder
+try:
+    RESULT_PATH = os.path.join(DATA, 'results')
+    if not os.path.exists(RESULT_PATH):
+        raise FileNotFoundError("Folder results does not exist.", RESULT_PATH)
+except Exception as e:
+    print("An error occured: ", e)
 
-RESULT_PATH = os.path.join(DATA, 'results')
+
+# Path to the submission folder
+try:
+    SUBMISSION_PATH = os.path.join('..', 'submissions')
+    if not os.path.exists(SUBMISSION_PATH):
+        raise FileNotFoundError("Folder submission does not exist.", SUBMISSION_PATH)
+except Exception as e:
+    print("An error occured: ", e)
+
 
 # ----------------------------------
 # -----  PROCESSING CONST  ---------
@@ -64,6 +78,9 @@ ADJ_THRESHOLD = 15
 
 # Contour len
 MIN_CONTOUR_LEN = 1500
+
+#Number of clusters
+N_CLUSTERS = 16
 
 # ----------------------------------
 # ---------  MODEL CONST  ----------
