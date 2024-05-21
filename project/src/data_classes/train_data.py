@@ -21,11 +21,10 @@ class trainCoin(Coin):
     """
     Class to load the training data
     """
-    def __init__(self, save=False,load_from_pickle=False):
+    def __init__(self, save=False):
 
         super().__init__(type='train', save=save)
         
-        self.from_pickle = load_from_pickle
         self.pickle_file_name = 'trainCoin.pkl'
         self.raw_data_pkl_name = 'raw_data.pkl'
         self.data_index_pkl_name = 'data_index.pkl'
@@ -47,10 +46,6 @@ class trainCoin(Coin):
         self.data_index : dict where the key is the class name and the value is a list of image names
         """
         success = False
-        if self.from_pickle:
-            print('Loading class from pickle')
-            self.load_pickle()
-            return
         
         if os.path.exists(self.pickle_path):
             print('Loading data from pickle files')

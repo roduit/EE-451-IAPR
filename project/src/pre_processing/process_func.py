@@ -97,14 +97,6 @@ def detect_contours_single_img(img, path, save, size = 45):
 
     # canny edge detection
     img_edges_std = np.std(cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200))
-    #img_edges_mean = np.mean(cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200))
-
-    # calculate the compactness of the image
-    img_edges = cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200)
-    contours, _ = cv.findContours(img_edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    compactness = 0
-    for contour in contours:
-        compactness += calculate_compactness(contour)
 
     if std < 18: #neutral
         title = "Neutral"
