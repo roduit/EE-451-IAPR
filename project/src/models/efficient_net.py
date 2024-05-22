@@ -19,7 +19,7 @@ def predict(model, dataloader):
     model.eval()
     predictions = []
 
-    for inputs, _ in dataloader:
+    for inputs in dataloader:
         inputs = inputs.to(device)
         outputs = model(inputs)
         _, preds = torch.max(outputs, 1)
