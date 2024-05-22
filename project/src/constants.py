@@ -62,6 +62,13 @@ try:
 except Exception as e:
     print("An error occured: ", e)
 
+# path to the model folder
+try:
+    MODEL_PATH = os.path.join('..', 'models')
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError("Folder model does not exist.", MODEL_PATH)
+except Exception as e:
+    print("An error occured: ", e)
 
 # ----------------------------------
 # -----  PROCESSING CONST  ---------
@@ -90,7 +97,7 @@ BATCH_SIZE = 32
 
 NUM_WORKERS = 8
 
-RATIO = 0.8
+RATIO = 0.95
 
 ANGLES_SET = np.linspace(0, 360, 18, endpoint=False)
 

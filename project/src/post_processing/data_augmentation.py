@@ -66,7 +66,7 @@ def augment_set_rotations(train_images, radius, train_labels):
         train_images_aug[start_idx:end_idx] = imgs_rotated
         train_labels_aug[start_idx:end_idx] = train_labels[idx]
         train_radius_aug[start_idx:end_idx] = radius[idx]
-
+    
     return train_images_aug,train_radius_aug, train_labels_aug
 
 
