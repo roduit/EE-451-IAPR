@@ -182,6 +182,36 @@ All the results are summarized in the table below
 | Efficient Net | No     | 300        | All               | 0.9883            |
 
 Based on this table, the best solution seems to be the Efficient Net ([efficientnet_b0](https://pytorch.org/vision/main/models/generated/torchvision.models.efficientnet_b0.html)). This model is pretrained on ImageNet1K and has a size of 20.5 MB. 
+
+## Environment 
+*environment.yml* and *requirements.txt* can be found at the root of the project to create an environment to run the project.
+
+To use the *environment.yml*, follow this procedure:
+- In the terminal, go to the root of your directory
+- Insert the following command
+```
+conda env create -f environment.yml
+```
+An environment named iapr-project will be created. 
+Then activate this environment
+```
+conda activate iapr-project
+```
+To use the *requirements.txt* file, follow this procedure:
+- In the terminal, go to the root of your directory
+- Insert the following command:
+```
+conda create -n iapr-project python=3.12.2
+```
+- Then:
+```
+conda activate iapr-project
+```
+- Finally:
+```
+pip install -r requirements.txt
+```
+
 ## Run the solution
 
 A `run.py` file is provided in order to produce the best solution found. This file can be found under *./src/run.py*.

@@ -2,7 +2,7 @@
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-21-05 -*-
 # -*- Last revision: 2024-12-05 -*-
-# -*- python version : 3.9.18 -*-
+# -*- python version : 3.12.3 -*-
 # -*- Description: Defines all the constants used in the project -*-
 
 # Importing libraries

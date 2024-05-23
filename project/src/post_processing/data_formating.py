@@ -2,7 +2,7 @@
 # -*- author : Vincent Roduit-*-
 # -*- date : 2024-05-19 -*-
 # -*- Last revision: 2024-05-19 (Vincent Roduit)-*-
-# -*- python version : 3.9.18 -*-
+# -*- python version : 3.12.3 -*-
 # -*- Description: Functions used to format data suitable for Neural Net -*-
 
 #import libraries

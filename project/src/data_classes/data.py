@@ -2,8 +2,8 @@
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
 # -*- Last revision: 2024-05-14 -*-
-# -*- python version : 3.9.18 -*-
-# -*- Description: Class to load data -*-
+# -*- python version : 3.12.3 -*-
+# -*- Description: Parent class to load data -*-
 
 
 # Importing libraries

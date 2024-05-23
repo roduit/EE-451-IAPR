@@ -2,7 +2,7 @@
 # -*- author : Vincent Roduit -*-
 # -*- date : 2024-05-22 -*-
 # -*- Last revision: 2024-05-23 -*-
-# -*- python version : 3.9.18 -*-
+# -*- python version : 3.12.3 -*-
 # -*- Description: Run the best solution -*-
 
 #import libraries

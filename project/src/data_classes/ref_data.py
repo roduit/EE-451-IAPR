@@ -2,8 +2,8 @@
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-03 -*-
 # -*- Last revision: 2024-05-03 -*-
-# -*- python version : 3.9.18 -*-
-# -*- Description: Class to load data -*-
+# -*- python version : 3.12.3 -*-
+# -*- Description: Class to load ref data -*-
 
 # Importing files
 from data_classes.data import Coin

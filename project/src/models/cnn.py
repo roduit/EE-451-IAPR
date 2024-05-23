@@ -2,8 +2,8 @@
 # -*- author : Vincent Roduit-*-
 # -*- date : 2024-05-15 -*-
 # -*- Last revision: 2024-05-15 (Vincent Roduit)-*-
-# -*- python version : 3.9.18 -*-
-# -*- Description: Define the models -*-
+# -*- python version : 3.12.3 -*-
+# -*- Description: Define the custom models -*-
 
 # import libraries
 import torch

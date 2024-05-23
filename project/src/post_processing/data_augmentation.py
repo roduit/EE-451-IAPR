@@ -2,7 +2,7 @@
 # -*- author : Vincent Roduit-*-
 # -*- date : 2024-05-15 -*-
 # -*- Last revision: 2024-05-15 (Vincent Roduit)-*-
-# -*- python version : 3.9.18 -*-
+# -*- python version : 3.12.3 -*-
 # -*- Description: Functions for data augmentation -*-
 
 # import libraries

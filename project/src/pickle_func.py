@@ -3,7 +3,7 @@
 # -*- authors : Vincent Roduit -*-
 # -*- date : 2024-05-05 -*-
 # -*- Last revision: 2024-05-05 -*-
-# -*- python version : 3.9.18 -*-
+# -*- python version : 3.12.3 -*-
 # -*- Description: Function to save results as pickle -*-
 
 # import libraries
