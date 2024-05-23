@@ -158,16 +158,30 @@ To perform the classification, a neural network has been chosen. More precisely 
 4. **Efficient-net**: A last approach is to use a pre-trained model. This model has been trained on ImageNet 1k.
 
 ## Results
-| Model        | Radius | Image Size | Data Augmentation | F1-Score (Kaggle) |
-| :----------- | :----- | :--------- | :---------------- | :---------------- |
-| Basic CNN    | No     | 200        | Rotation          | 0.6142            |
-| Advanced CNN | No     | 200        | Rotation          | 0.6804            |
-| Advanced CNN | Yes    | 200        | Rotation          | 0.6242            |
-| Basic CNN    | No     | 300        | Rotation          | 0.722             |
-| Advanced CNN | No     | 300        | Rotation          | 0.8216            |
-| Advanced CNN | Yes    | 300        | Rotation          | 0.8133            |
-| Advanced CNN | No     | 400        | Rotation          | 0.8011            |
 
+Different techniques have been used to boost the performances of the classifier, involving:
+- including the radius
+- changing the size of the input image
+- performing different data augmentation
+
+All the results are summarized in the table below
+
+
+| Model         | Radius | Image Size | Data Augmentation | F1-Score (Kaggle) |
+| :------------ | :----- | :--------- | :---------------- | :---------------- |
+| Basic CNN     | No     | 200        | Rotation          | 0.6142            |
+| Basic CNN     | No     | 300        | Rotation          | 0.722             |
+| Basic CNN     | No     | 300        | All               | 0.7741            |
+| Advanced CNN  | No     | 200        | Rotation          | 0.6804            |
+| Advanced CNN  | Yes    | 200        | Rotation          | 0.6242            |
+| Advanced CNN  | Yes    | 300        | Rotation          | 0.8133            |
+| Advanced CNN  | Yes    | 300        | All               | 0.7688            |
+| Advanced CNN  | No     | 300        | Rotation          | 0.8216            |
+| Advanced CNN  | No     | 400        | Rotation          | 0.8011            |
+| Advanced CNN  | No     | 300        | All               | 0.8415            |
+| Efficient Net | No     | 300        | All               | 0.9883            |
+
+Based on this table, the best solution seems to be the Efficient Net ([efficientnet_b0](https://pytorch.org/vision/main/models/generated/torchvision.models.efficientnet_b0.html)). This model is pretrained on ImageNet1K and has a size of 20.5 MB. 
 ## Run the solution
 
 A `run.py` file is provided in order to produce the best solution found. This file can be found under *./src/run.py*.
