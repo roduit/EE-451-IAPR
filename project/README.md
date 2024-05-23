@@ -169,3 +169,26 @@ To perform the classification, a neural network has been chosen. More precisely 
 | Advanced CNN | No     | 400        | Rotation          | 0.8011            |
 
 ## Run the solution
+
+A `run.py` file is provided in order to produce the best solution found. This file can be found under *./src/run.py*.
+
+Several arguments can be added:
+
+- **model_path** : provide the path of the pretrained model in order to save time
+
+- **output_csv_path**: provide the path where to save the prediction
+
+- **save**: if `save=True`, processed images will be save (time consumming)
+
+Example of how to run:
+
+```
+python run.py
+```
+wil run the best model from scratch
+
+```
+python run.py --model_path ../models/Efficient_net_300
+```
+
+will run the best model and save the prediction under `../submissions`

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- author : Vincent Roduit -*-
 # -*- date : 2024-05-22 -*-
-# -*- Last revision: 2024-05-22 -*-
+# -*- Last revision: 2024-05-23 -*-
 # -*- python version : 3.9.18 -*-
 # -*- Description: Run the best solution -*-
 
@@ -12,7 +12,7 @@ import os
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import numpy as np
-from models.cnn import Advanced_CNN
+import timm
 
 #import files
 from data_classes.train_data import trainCoin
@@ -25,14 +25,21 @@ from post_processing.data_formating import create_test_data_structure
 from post_processing.data_formating import create_splits
 from post_processing.data_augmentation import *
 from post_processing.dataloader import create_dataloader, create_test_dataloader
-from models.cnn import Advanced_CNN
 from post_processing.submission import create_submission_file
+from models.efficient_net import *
 
 
 def handle_path(model_path,output_csv_path):
-    if model_path is None:
-        model_path = constants.MODEL_PATH
-    elif not os.path.exists(model_path):
+    """Handle the model and output path
+    Args:
+        model_path (str): Path to the model file
+        output_csv_path (str): Path to the output csv file
+    
+    Returns:
+        model_path (str): Path to the model file
+        output_csv_path (str): Path to the output csv file
+    """
+    if model_path is not None and not os.path.exists(model_path):
         raise ValueError("Model path does not exist")
     if output_csv_path is None:
         output_csv_path = constants.SUBMISSION_PATH
@@ -41,21 +48,39 @@ def handle_path(model_path,output_csv_path):
     return model_path,output_csv_path
 
 def run_best_solution(model_path, output_csv_path, save):
+    """Run the best solution
+    Args:
+        model_path (str): Path to the model file
+        output_csv_path (str): Path to the output csv file
+        save (bool): Save the images
+    
+    Returns:
+        None
+    """
     # Load the model
     model_path, output_csv_path = handle_path(model_path, output_csv_path)
     make_prediction(model_path, output_csv_path, save)
 
     print(f"Time elapsed: {time.time() - st:.2f} s")
 
-def make_prediction(model_path, save):
+def make_prediction(model_path,output_csv_path, save):
+    """Make predictions using the best model and create the submission file
+    Args:
+        model_path (str): Path to the model file
+        output_csv_path (str): Path to the output csv file
+        save (bool): Save the images
+    
+    Returns:
+        None
+    """
     if model_path is None:
         print("No model path provided: training the model...")
-        #Load train data
-        train_data = trainCoin(save=save)
-        test_data = testCoin(save=save)
+
         print("processing train data...")
+        train_data = trainCoin(save=save)
         train_data.proceed_data()
         print("processing test data...")
+        test_data = testCoin(save=save)
         test_data.proceed_data()
         print("creating data loaders...")
         conversion_table = get_classes_conv_table()
@@ -89,34 +114,27 @@ def make_prediction(model_path, save):
                                                 val_radius=None)
         
         test_dataloader = create_test_dataloader(test_imgs, None)
-        image_dim = np.array(train_images_aug[0]).shape[0]
         num_classes = len(conversion_table)
 
         print("training model...")
         # Define the model
-        cnn = Advanced_CNN(img_size=image_dim, num_classes=num_classes)
+        model = timm.create_model('efficientnet_b0', pretrained=True, num_classes=num_classes)
 
-        # Define the optimizer
-        optimizer = torch.optim.Adam(cnn.parameters(), lr=0.001)
-        # Define the scheduler
-        scheduler = ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.1, patience=2, verbose=True
-        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
         # Train the model
-        cnn.train_model(
-            optimizer,
-            scheduler,
-            train_dataloader,
-            val_dataloader,
-        )
-        predictions = cnn.predict(test_dataloader)
-        _ = create_submission_file(predictions, df_test_images, conversion_table, name='submission_advanced.csv')
+        model = train_model(model, optimizer, scheduler, train_dataloader, val_dataloader, num_epochs=10)
+
+        print("making predictions...")
+        predictions = predict(model, test_dataloader)
+        _ = create_submission_file(predictions, df_test_images, conversion_table, name='submission_from_run.csv', path=output_csv_path)
         print("Model trained and submission file created")
     else:
         print("Model path provided: loading the model...")
         # Load the model
-        model = torch.load(model_path)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = torch.load(model_path, map_location=device)
         model.eval()
         # Load test data
         test_data = testCoin(save=save)
@@ -125,8 +143,10 @@ def make_prediction(model_path, save):
         print("creating data loaders...")
         test_imgs, _, df_test_images = create_test_data_structure(test_data.coins, test_data.contours_tuple)
         test_dataloader = create_test_dataloader(test_imgs, None)
-        predictions = model.predict(test_dataloader)
-        _ = create_submission_file(predictions, df_test_images, conversion_table, name='submission_advanced.csv')
+        print("making predictions...")
+        predictions = predict(model, test_dataloader)
+        conversion_table = get_classes_conv_table()
+        _ = create_submission_file(predictions, df_test_images, conversion_table, name='submission_from_run.csv', path=output_csv_path)
         print("Submission file created")
 
 
