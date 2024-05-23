@@ -18,6 +18,7 @@ EE-451: Image Analysis and Pattern Recognition
 - [Dataset Structure](#dataset-structure)
 - [Data Wrangling](#data-wrangling)
 - [Models](#models)
+- [Environment](#environment)
 - [Results](#results)
 - [Run the solution](#run-the-solution)
 
