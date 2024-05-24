@@ -13,6 +13,7 @@ from copy import deepcopy
 import numpy as np
 # Importing files
 import constants
+from post_processing.data_augmentation import *
 
 
 
@@ -130,3 +131,36 @@ def plot_crop_coins(coin_images):
         axs[i].set_title(f'Coin {idx}')
     fig.suptitle('Cropped coins', fontsize=20)
     plt.show()
+
+def display_augmentation(image):
+    """display the different augmentations
+    
+    Args:
+        image: np.array (M, N) Image
+    """
+
+    image_rotated = rotate_image(image, 45)
+    image_blurred = blur_image(image, 5)
+    image_hist_eq = histogram_equalization(image)
+    image_contrast = gamma_correction(image, 1.5)
+
+    fig, axs = plt.subplots(1, 4, figsize=(15, 5))
+
+    axs[0].imshow(image_rotated)
+    axs[0].axis('off')
+    axs[0].set_title('Rotated')
+
+    axs[1].imshow(image_blurred)
+    axs[1].axis('off')
+    axs[1].set_title('Blurred')
+
+    axs[2].imshow(image_hist_eq)
+    axs[2].axis('off')
+    axs[2].set_title('Histogram Equalization')
+
+    axs[3].imshow(image_contrast)
+    axs[3].axis('off')
+    axs[3].set_title('Contrast')
+
+    plt.show()
+
