@@ -164,3 +164,28 @@ def display_augmentation(image):
 
     plt.show()
 
+def display_cluster(images, labels, index):
+
+    images_cluster = [coin for i, coin in enumerate(images) if labels[i] == index]
+
+    # Calculate the number of rows needed
+    num_images = len(images_cluster)
+    num_cols = 5
+    num_rows = (num_images + num_cols - 1) // num_cols  # Ensure all images fit into the grid
+
+    # Create subplots
+    fig, ax = plt.subplots(num_rows, num_cols, figsize=(20, 20))
+
+    # Plot the images
+    for i in range(num_rows * num_cols):
+        if i < num_images:
+            ax[i // num_cols, i % num_cols].imshow(images_cluster[i], cmap='gray')
+            ax[i // num_cols, i % num_cols].axis('off')
+            ax[i // num_cols, i % num_cols].set_title(f'Coin {i+1}')
+        else:
+            ax[i // num_cols, i % num_cols].axis('off')  # Turn off any unused subplots
+
+    # Adjust layout to avoid overlap
+    plt.tight_layout()
+    plt.show()
+

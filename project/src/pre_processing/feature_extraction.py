@@ -14,10 +14,24 @@ from sklearn.mixture import GaussianMixture
 from scipy.optimize import linear_sum_assignment
 from sklearn.metrics import silhouette_score
 import pandas as pd
+import os
+import timm
+from torch import nn
+import torch
 
 # Import files
 import constants
-import os
+from post_processing.data_formating import resize_images
+
+class FeatureExtractor(nn.Module):
+    def __init__(self, model):
+        super(FeatureExtractor, self).__init__()
+        self.features = nn.Sequential(*list(model.children())[:-1])
+        
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        return x
 
 def extract_combined_features(image):
     """Extract combined features from an image.
@@ -46,7 +60,7 @@ def extract_combined_features(image):
 
     return np.array(features)
 
-def find_gmm_labels(images, n_clusters):
+def find_gmm_labels(images, n_clusters, handcrafted=False):
     """Find GMM labels for a list of images.
     Args:
         images (List[np.array]): The images to find labels for.
@@ -55,17 +69,26 @@ def find_gmm_labels(images, n_clusters):
     Returns:
         List[int]: The labels for the images.
     """
-    features = [extract_combined_features(image) for image in images]
+    if handcrafted:
+        features = [extract_combined_features(image) for image in images]
+    else:
+        model = timm.create_model('efficientnet_b0', pretrained=True)
+        feature_extractor = FeatureExtractor(model)
+        biggest_dim = max(max(image.shape[:2]) for image in images)
+        coin_images_reshaped = resize_images(images, biggest_dim)
+        coin_images_reshaped = resize_images(coin_images_reshaped, 224)
+        coin_images_transposed = [np.transpose(image, (2,0,1)).astype(np.float32) for image in coin_images_reshaped]
+        coin_images_tensor = torch.tensor(coin_images_transposed)
+        features = feature_extractor(coin_images_tensor).detach().numpy()
 
-    # Dimensionality reduction
-    pca = PCA(n_components=10)
+    # Reduce dimension
+    pca = PCA(n_components=30)
     features_pca = pca.fit_transform(features)
 
-    # Clustering with Gaussian Mixture Models
+    # Perform Clustering
     gmm = GaussianMixture(n_components=n_clusters, random_state=0)
     labels = gmm.fit_predict(features_pca)
 
-    # Evaluate clustering
     score = silhouette_score(features_pca, labels)
     print(f'Silhouette Score: {score}')
 
@@ -87,16 +110,12 @@ def associate_labels(images):
     coin_label_name = df_train_labels.columns[1:]
     cluster_counts = np.bincount(labels, minlength=len(known_counts))
 
-    # Create cost matrix for Hungarian algorithm
+    # perform Optimization Search
     cost_matrix = np.abs(cluster_counts[:, np.newaxis] - known_counts)
-
-    # Apply Hungarian algorithm to minimize cost
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
-    # Map clusters to known coin types
+    # Maapping
     cluster_to_coin_type = {row: col for row, col in zip(row_ind, col_ind)}
-
-    # Print the mapping
     for cluster, coin_type in cluster_to_coin_type.items():
         print(f"Cluster {cluster} is mapped to coin type {coin_type + 1}, which is a {coin_label_name[coin_type]}")
     
