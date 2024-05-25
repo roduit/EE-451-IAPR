@@ -223,6 +223,8 @@ pip install -r requirements.txt
 
 ## Run the solution
 
+The notebook has been tested on 32GB RAM. As the image loading is heavy, PC with less than 32GB RAM has shown some issues running the Notebook and the solution. Please, use Google Colaboratory to ensure better performances if needed.
+
 A `run.py` file is provided in order to produce the best solution found. This file can be found under *./src/run.py*.
 
 Several arguments can be added:
