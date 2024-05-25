@@ -36,14 +36,6 @@ def enhance_blue_channel(image):
 
     return enhanced_image
 
-def calculate_compactness(contour):
-    perimeter = cv.arcLength(contour, True)
-    area = cv.contourArea(contour)
-    if area == 0:
-        return 0
-    compactness = (perimeter ** 2) / (4 * np.pi * area)
-    return compactness
-
 def generate_mask(img):
 
     image_mask = img.copy()
@@ -141,10 +133,10 @@ def detect_contours_single_img(img, path, save, size = 45):
 
     #thresholded = np.uint8(remove_objects(thresholded, 16) * 255)
     thresholded = np.uint8(remove_objects(thresholded,remove_objects_size) * 255)
-    thresholded_open = apply_closing(thresholded, open_th) # 3
-    thresholded_open = cv.GaussianBlur(thresholded_open, (size, size), th_sigma) # 2
+    thresholded_closing = apply_closing(thresholded, open_th) # 3
+    thresholded_blur = cv.GaussianBlur(thresholded_closing, (size, size), th_sigma) # 2
 
-    circles = cv.HoughCircles(thresholded_open, cv.HOUGH_GRADIENT, dp=1, minDist=50, param1=15, param2=p2, minRadius=40, maxRadius=120) # 32
+    circles = cv.HoughCircles(thresholded_blur, cv.HOUGH_GRADIENT, dp=1, minDist=50, param1=15, param2=p2, minRadius=40, maxRadius=120) # 32
     if save and circles is not None:
         circles = np.uint16(np.around(circles))
         for i in circles[0, :]:

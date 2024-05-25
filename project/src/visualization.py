@@ -14,6 +14,8 @@ import numpy as np
 # Importing files
 import constants
 from post_processing.data_augmentation import *
+from pre_processing.process_func import generate_mask
+from pre_processing.morphology import apply_closing, remove_objects
 
 
 
@@ -189,3 +191,109 @@ def display_cluster(images, labels, index):
     plt.tight_layout()
     plt.show()
 
+def display_generate_mask(img):
+    """Display the generated mask
+
+    Args:
+        img: np.array (M, N) Image
+    """
+    oringinal_img = img.copy()  
+    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    img = cv.resize(img, (0,0), fx=0.25, fy=0.25)
+    mask = generate_mask(img)
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+
+    axs[0].imshow(cv.cvtColor(oringinal_img, cv.COLOR_BGR2RGB))
+    axs[0].axis('off')
+    axs[0].set_title('Original Image')
+
+    axs[1].imshow(mask)
+    axs[1].axis('off')
+    axs[1].set_title('Generated Mask')
+
+    plt.show()
+
+def display_img_processing(img):
+    std = np.std(cv.cvtColor(255 - img, cv.COLOR_BGR2GRAY))
+    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    img = cv.resize(img, (0,0), fx=0.25, fy=0.25)
+    img_copy = img.copy()
+
+    # canny edge detection
+    img_edges_std = np.std(cv.Canny(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 50, 200))
+
+    if std < 18: #neutral
+        title = "Neutral"
+        remove_objects_size = 10
+        thres2 = 1
+        sigma = 2.7
+        p2 = 32
+        th_sigma = 2.5
+        open_th = 3
+    
+    else:
+        remove_objects_size = 120
+        if img_edges_std < 50: #hand
+            title = "Hand"
+            thres2 = 3
+            sigma = 2.7
+            p2 = 38
+            th_sigma = 2.7 # 2.7
+            open_th = 6 # 6
+        else: # noisy
+            title = "Noisy"
+            thres2 = 2 # 1
+            sigma = 2.7 # 2.7
+            p2 = 32 # 30
+            th_sigma = 2.2 # 2.2
+            open_th = 5 # 3
+    
+    if title == "Noisy":
+        img = generate_mask(img)
+
+    #print(idx, " -", title, ": edges_std:", img_edges_std, "edges_mean:", img_edges_mean, "compactness:", compactness)
+
+    img[:,:,0] = img[:,:,0]*0.25 #red
+    img[:,:,1] = img[:,:,1]*0.25 #green
+    img[:,:,2] = img[:,:,2]*1 #blue 
+
+    original_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    imgGray = cv.cvtColor(255 - img, cv.COLOR_BGR2GRAY)
+
+    low_pass = cv.GaussianBlur(imgGray, (45, 45), sigma)
+    high_pass = cv.subtract(imgGray, low_pass)
+    _, thresholded = cv.threshold(high_pass, thres2, 255, cv.THRESH_BINARY)
+
+    #thresholded = np.uint8(remove_objects(thresholded, 16) * 255)
+    thresholded_rm = np.uint8(remove_objects(thresholded,remove_objects_size) * 255)
+    thresholded_closing = apply_closing(thresholded_rm, open_th) # 3
+    thresholded_blur = cv.GaussianBlur(thresholded_closing, (45, 45), th_sigma) # 2
+
+    fig, axs = plt.subplots(2, 3, figsize=(10, 5))
+
+    axs[0, 0].imshow(original_gray, cmap='gray')
+    axs[0, 0].axis('off')
+    axs[0, 0].set_title('Gray Image')
+
+    axs[0, 1].imshow(low_pass, cmap='gray')
+    axs[0, 1].axis('off')
+    axs[0, 1].set_title('Low Pass')
+
+    axs[0, 2].imshow(high_pass, cmap='gray')
+    axs[0, 2].axis('off')
+    axs[0, 2].set_title('High Pass')
+
+    axs[1, 0].imshow(thresholded, cmap='gray')
+    axs[1, 0].axis('off')
+    axs[1, 0].set_title('Thresholded')
+
+    axs[1, 1].imshow(thresholded_rm, cmap='gray')
+    axs[1, 1].axis('off')
+    axs[1, 1].set_title('Object Removed')
+
+    axs[1, 2].imshow(thresholded_blur, cmap='gray')
+    axs[1, 2].axis('off')
+    axs[1, 2].set_title('Thresholded Blur')
+
+    plt.show()

@@ -134,6 +134,10 @@ The next part of the process is to detect the coins in the different images and 
    `('L1010410', 'L1010410_0', array([812.5, 582.5,  53.6], dtype=float32))`. 
 3. The last step of the process is to crop the coins. For each image, coins are detoured and return a croped image of variable shape. These croped images are stored as an array.
 
+<p align="center">
+<img src="./resources/processing_steps.png" alt="processing steps" width="/500">
+<p>
+
 ### Labelisation
 Now that the images have been segmented, each coin must be associated with its corresponding label. However, due to the use of Weak Supervision in the train labels (train_labels.csv), direct assignment of coins to their respective classes is not feasible.
 
@@ -148,6 +152,10 @@ Data augmentation is also performed to improve the results and expand the traini
 - **Gamma Correction**: This augmentation is used to correct the difference in luminescence in the image. 
     - Gamma > 1: Darkens the image.
     - Gamma < 1: Brightens the image.
+<p align="center">
+<img src="./resources/augmentation.png" alt="Example Image" width="400">
+</P>
+
 
 ### Classification
 To perform the classification, a neural network has been chosen. More precisely a Convolutional Neural Network has been chosen. This kind of neural network has shown very high performance for computer vision tasks. For this projects, several models are proposed.
