@@ -153,7 +153,7 @@ Data augmentation is also performed to improve the results and expand the traini
     - Gamma > 1: Darkens the image.
     - Gamma < 1: Brightens the image.
 <p align="center">
-<img src="./resources/augmentation.png" alt="Example Image" width="400">
+<img src="./resources/augmentation.png" alt="Example Image" width="600">
 </P>
 
 
