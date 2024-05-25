@@ -49,7 +49,7 @@ except Exception as e:
 try:
     RESULT_PATH = os.path.join(DATA, 'results')
     if not os.path.exists(RESULT_PATH):
-        raise FileNotFoundError("Folder results does not exist.", RESULT_PATH)
+        os.makedirs(RESULT_PATH)
 except Exception as e:
     print("An error occured: ", e)
 
@@ -58,7 +58,7 @@ except Exception as e:
 try:
     SUBMISSION_PATH = os.path.join('..', 'submissions')
     if not os.path.exists(SUBMISSION_PATH):
-        raise FileNotFoundError("Folder submission does not exist.", SUBMISSION_PATH)
+        os.makedirs(SUBMISSION_PATH)
 except Exception as e:
     print("An error occured: ", e)
 
@@ -66,7 +66,7 @@ except Exception as e:
 try:
     MODEL_PATH = os.path.join('..', 'models')
     if not os.path.exists(MODEL_PATH):
-        raise FileNotFoundError("Folder model does not exist.", MODEL_PATH)
+        os.makedirs(MODEL_PATH)
 except Exception as e:
     print("An error occured: ", e)
 

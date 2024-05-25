@@ -75,12 +75,11 @@ def get_single_cat(raw_data):
         keys: list List of categories.
     """
     keys = list(raw_data.keys())
+    new_keys = []
     for key in keys:
-        if 'outliers' in key:
-            non_outlier_key = key.replace('_outliers', '')
-            if non_outlier_key in raw_data:
-                del raw_data[key]
-    return keys
+        if not '_outliers' in key:
+            new_keys.append(key)                
+    return new_keys
 
 def construct_contour_images(images, contours):
     """Construct the images with the contours.
