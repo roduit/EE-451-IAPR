@@ -139,7 +139,6 @@ class Coin(Dataset):
                 coin_images.append((image_name, coin_name, coin))
                 coins_contours.append((image_name, coin_name, self.contours[idx1][0][idx2]))
                 if self.save:
-                    print(coin.shape)
                     plt.figure()
                     plt.imshow(coin)
                     plt.savefig(img_path)

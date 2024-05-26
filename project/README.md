@@ -223,7 +223,11 @@ pip install -r requirements.txt
 
 ## Run the solution
 
+<span style="color: red;">Important</span>
+
 The notebook has been tested on 32GB RAM. As the image loading is heavy, PC with less than 32GB RAM has shown some issues running the Notebook and the solution. Please, use Google Colaboratory to ensure better performances if needed.
+
+Furthermore, it has been shown that depending on the computer, the contours are founded in a different orders, meaning that the association with the provided label files (`../data/results/train/coin_img/coin_labels_complete.xlsx`) might be wrong. If you want to test from scratch, verify that all the coins arre correctly assigned. This can be easily done by visual inspection by using the function **save_coins_classified** from visualization.py. The images will be sorted according to their labels under `../data/results/train/coins_classified`
 
 A `run.py` file is provided in order to produce the best solution found. This file can be found under *./src/run.py*.
 
