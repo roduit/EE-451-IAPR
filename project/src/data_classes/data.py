@@ -94,7 +94,8 @@ class Coin(Dataset):
         """
         images_set = self.raw_data
         path = os.path.join(constants.RESULT_PATH, self.type, 'contours')
-        self.contours = pf.detect_contours(images_set, path, self.save)
+        image_names = self.data_index
+        self.contours = pf.detect_contours(images_set, path, image_names, self.save)
     
     def create_masked_images(self):
         """

@@ -150,7 +150,7 @@ def detect_contours_single_img(img, path, save, size = 45):
     return circles
 
 # apply the function to all the images in the folder
-def detect_contours(imgs, path, save):
+def detect_contours(imgs, path, images_names, save):
     """Detect the contours of the coins in the images
     Args:
         imgs: list of np.array (M, N) List of images
@@ -165,7 +165,8 @@ def detect_contours(imgs, path, save):
 
     all_contours = []
     for i, img in enumerate(imgs):
-        image_path = os.path.join(path,f'_img_{i}.png')
+        image_name = images_names[i]
+        image_path = os.path.join(path,f'{image_name}.png')
         contours = detect_contours_single_img(img, image_path, save)
         all_contours.append(contours)
     return all_contours

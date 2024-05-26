@@ -92,7 +92,8 @@ class trainCoin(Coin):
         for category in self.raw_data:
             images_set = self.raw_data[category]
             path = os.path.join(constants.RESULT_PATH,self.type,'contours', category)
-            self.contours[category] = pf.detect_contours(images_set, path, self.save)
+            images_names = self.data_index[category]
+            self.contours[category] = pf.detect_contours(images_set, path, images_names, self.save)
     
     def create_masked_images(self):
         """
