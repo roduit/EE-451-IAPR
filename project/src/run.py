@@ -92,6 +92,9 @@ def make_prediction(model_path,output_csv_path, save):
                                                                                         train_radius_infos, 
                                                                                         labels,
                                                                                         ratio=constants.RATIO)
+        # deleting the raw images to free up memory
+        del train_data
+        del test_data
         print("augmenting data...")
         # Augment the training set with rotations
         train_images_aug, train_radius_aug, train_labels_aug = augment_set_rotations(train_images, train_radius, train_labels)
@@ -115,6 +118,16 @@ def make_prediction(model_path,output_csv_path, save):
         
         test_dataloader = create_test_dataloader(test_imgs, None)
         num_classes = len(conversion_table)
+
+        #delete datasets to free up memory
+        del train_images
+        del train_radius
+        del train_labels
+        del val_images
+        del val_labels
+        del train_images_aug
+        del train_radius_aug
+        del train_labels_aug
 
         print("training model...")
         # Define the model
