@@ -104,4 +104,3 @@ dependencies:
       - tzdata==2024.1
       - urllib3==2.2.1
       - widgetsnbextension==4.0.10
-prefix: /usr/local/anaconda3/envs/iapr-project
