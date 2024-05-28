@@ -8,6 +8,8 @@
 # import libraries
 import cv2 as cv
 import numpy as np
+
+#import files
 import constants
 
 def rotate_image(image, angle):

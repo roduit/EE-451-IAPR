@@ -10,8 +10,6 @@ import time
 import argparse
 import os
 import torch
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-import numpy as np
 import timm
 
 #import files

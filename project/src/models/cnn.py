@@ -8,7 +8,6 @@
 # import libraries
 import torch
 import torch.nn as nn
-from sklearn.metrics import f1_score 
 
 class CNN(nn.Module):
     def __init__(self, img_size, num_classes):
