@@ -16,7 +16,7 @@ EE-451: Image Analysis and Pattern Recognition
 - [Abstract](#abstract)
 - [Project Structure](#project-structure)
 - [Dataset Structure](#dataset-structure)
-- [Data Wrangling](#data-wrangling)
+- [Data Processing](#data-processing)
 - [Models](#models)
 - [Environment](#environment)
 - [Results](#results)
@@ -27,48 +27,85 @@ The purpose of this project is to detect coins on a given image. Several backgro
 - neutral background
 - hand background
 - noisy backgroud
+  
 In order to detect efficiently the coins, preprocessing tasks have to be performed before doing classification. These tasks involve thresholding, morphology and edge detection. For the classification part, several model have been tested, showing reasonably good performance. The results of the differents models are summarized in the [Results](#results) section.
 
 ## Project structure
 The project has the following structure:
 ```
 .
+├── LICENSE
 ├── README.md
 ├── data
+│   ├── coin_labels_complete.xlsx
 │   ├── ref
+│   │   ├── ref_chf.JPG
+│   │   └── ref_eur.JPG
 │   ├── results
+│   │   ├── ref
+│   │   ├── test
+│   │   └── train
 │   ├── test
+│   │   ├── L0000000.JPG
+│   │   ├── ...
+│   │   └── L0000161.JPG
 │   ├── train
+│   │   ├── 1. neutral_bg
+│   │   ├── 2. noisy_bg
+│   │   ├── 3. hand
+│   │   ├── 4. neutral_bg_outliers
+│   │   ├── 5. noisy_bg_outliers
+│   │   └── 6. hand_outliers
 │   └── train_labels.csv
 ├── documents
-│   └── IAPR_Project_2024.pdf
+│   ├── ee451_presentation.pdf
+│   └── ee451_project_description.pdf
 ├── environment.yml
+├── models
+│   ├── Advanced_CNN_300
+│   ├── Basic_CNN_300
+│   └── Efficient_net_300
 ├── requirements.txt
 ├── resources
-│   └── logo-epfl.png
-└── src
-    ├── constants.py
-    ├── data_classes
-    │   ├── data.py
-    │   ├── ref_data.py
-    │   ├── test_data.py
-    │   └── train_data.py
-    ├── main.ipynb
-    ├── main.py
-    ├── models
-    │   └── cnn.py
-    ├── pickle_func.py
-    ├── post_processing
-    │   ├── data_augmentation.py
-    │   ├── data_formating.py
-    │   ├── dataloader.py
-    │   ├── datasets.py
-    │   └── submission.py
-    ├── pre_processing
-    │   ├── feature_extraction.py
-    │   ├── morphology.py
-    │   └── process_func.py
-    └── visualization.py
+│   ├── augmentation.png
+│   ├── logo-epfl.png
+│   ├── masked_img.png
+│   └── processing_steps.png
+├── src
+│   ├── constants.py
+│   ├── data_classes
+│   │   ├── data.py
+│   │   ├── ref_data.py
+│   │   ├── test_data.py
+│   │   └── train_data.py
+│   ├── main.ipynb
+│   ├── models
+│   │   ├── cnn.py
+│   │   └── efficient_net.py
+│   ├── pickle_func.py
+│   ├── post_processing
+│   │   ├── data_augmentation.py
+│   │   ├── data_formating.py
+│   │   ├── dataloader.py
+│   │   ├── datasets.py
+│   │   └── submission.py
+│   ├── pre_processing
+│   │   ├── feature_extraction.py
+│   │   ├── morphology.py
+│   │   └── process_func.py
+│   ├── run.py
+│   └── visualization.py
+└── submissions
+    ├── advanced_radius_300.csv
+    ├── results.xlsx
+    ├── submission.csv
+    ├── submission_300_basic.csv
+    ├── submission_advanced_300.csv
+    ├── submission_advanced_400.csv
+    ├── submission_advanced_radius.csv
+    ├── submission_basic_cnn.csv
+    ├── submission_efficient_net_300.csv
+    └── submission_from_run.csv
 ```
 
 The `src` folder contains all the code needed to perform a submission for the [Kaggle Challenge](https://www.kaggle.com/competitions/iapr24-coin-counter). 
@@ -115,7 +152,7 @@ In order to efficiently use the code, the structure is recommanded for the data.
 
 ## Data Processing
 ### Finding the coins
-The next part of the process is to detect the coins in the different images and create single image for each coin. The class function **proceed_data** does the whole analysis. This analysis can be decomposed into several parts.
+The next part of the process is to detect the coins in the different images and create a single image for each coin. The class function **proceed_data** does the whole analysis. This analysis can be decomposed into several parts.
 
 1. Finding contours:  
    The first step of the process is to find the contours. In order to effectively detect the contours, depending on the background properties, these steps are performed:
@@ -125,7 +162,7 @@ The next part of the process is to detect the coins in the different images and 
    - Morphology is applied in order to clean the image and make it easier to detect the coins. First, small objects are removed and then a closing is done. 
    - The last step is to find the contours (using cv.HoughCircles). 
 
-   This process gives very good results (1 coin is not detected in the train set(superposed coins) and two are not detected in the test set)
+   This process gives very good results (1 coin is not detected in the train set (superposed coins) and two are not detected in the test set)
 
 2. Create the masked images:
    Now that the coins are efficiently detected, a masked image is created on the original image. This is done in order to have a perfect contours on the coins. These masked images are again stored both as a dictionary (attribute of the class) and as a tuple in order to save informations about the image. These tuples have the following shape: \
@@ -149,19 +186,20 @@ The next step before classification is to separate the training values into trai
 Data augmentation is also performed to improve the results and expand the training set. Several methods have been used:
 - **Rotations**: Rotations are applied to ensure the model can recognize coins from every direction.
 - **Gaussian Blur**: With a certain probability, Gaussian blur is applied to images to enhance the model's robustness.
-- **Gamma Correction**: This augmentation is used to correct the difference in luminescence in the image. 
+- **Gamma Correction**: This augmentation is used to correct the difference in luminosity in the image. 
     - Gamma > 1: Darkens the image.
     - Gamma < 1: Brightens the image.
+- **Histogramm Equalization** : This augmentation standardizes the pixel color distribution across the grayscale spectrum.
 <p align="center">
 <img src="./resources/augmentation.png" alt="Example Image" width="600">
 </P>
 
 
 ### Classification
-To perform the classification, a neural network has been chosen. More precisely a Convolutional Neural Network has been chosen. This kind of neural network has shown very high performance for computer vision tasks. For this projects, several models are proposed.
+To perform the classification, a neural network has been chosen. More precisely a Convolutional Neural Network has been chosen. This kind of neural network has shown very high performance for computer vision tasks. For this projects, several models are proposed. They are presented in the next section.
 
 ## Models
-1. **Basic CNN**: This first approach consists of a basic CNN wiht only few layers (details can be found under ./models/cnn.yp). 
+1. **Basic CNN**: This first approach consists of a basic CNN wiht only few layers (details can be found under ./src/models/cnn.py). 
 2. **Advanced CNN**: The second model is a more elaborated CNN model, with multiple layers. 
 3. **Advanced CNN with Radius Informations**: In this approach, the same CNN as in point 2 has been used, but before the fully connected layer, the information of the radius has been inserted. 
 4. **Efficient-net**: A last approach is to use a pre-trained model. This model has been trained on ImageNet 1k.
@@ -223,11 +261,11 @@ pip install -r requirements.txt
 
 ## Run the solution
 
-<span style="color: red;">Important</span>
+${\color{red} Important}$
 
 The notebook has been tested on 32GB RAM. As the image loading is heavy, PC with less than 32GB RAM has shown some issues running the Notebook and the solution. Please, use Google Colaboratory to ensure better performances if needed.
 
-Furthermore, it has been shown that depending on the computer, the contours are founded in a different orders, meaning that the association with the provided label files (`../data/results/train/coin_img/coin_labels_complete.xlsx`) might be wrong. If you want to test from scratch, verify that all the coins arre correctly assigned. This can be easily done by visual inspection by using the function **save_coins_classified** from visualization.py. The images will be sorted according to their labels under `../data/results/train/coins_classified`
+Furthermore, it has been shown that depending on the computer, the contours are founded in a different orders, meaning that the association with the provided label files (`../data/results/train/coin_img/coin_labels_complete.xlsx`, you need to put this file in this location. By default, this file is at `./data/coin_labels_complete.xlsx`) might be wrong. If you want to test from scratch, verify that all the coins arre correctly assigned. This can be easily done by visual inspection by using the function **save_coins_classified** from visualization.py. The images will be sorted according to their labels under `../data/results/train/coins_classified`
 
 A `run.py` file is provided in order to produce the best solution found. This file can be found under *./src/run.py*.
 
