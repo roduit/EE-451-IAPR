@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# -*- author : Vincent Roduit -*-
+# -*- author : Vincent Roduit, Filippo Quadri -*-
 # -*- date : 2024-05-22 -*-
-# -*- Last revision: 2024-05-23 -*-
+# -*- Last revision: 2024-05-23 (Filippo Quadri) -*-
 # -*- python version : 3.12.3 -*-
 # -*- Description: Run the best solution -*-
 
