@@ -61,11 +61,11 @@ The project has the following structure:
 │   ├── ee451_presentation.pdf
 │   └── ee451_project_description.pdf
 ├── environment.yml
+├── environment_windows.yml
 ├── models
 │   ├── Advanced_CNN_300
 │   ├── Basic_CNN_300
 │   └── Efficient_net_300
-├── requirements.txt
 ├── resources
 │   ├── augmentation.png
 │   ├── logo-epfl.png
@@ -233,7 +233,7 @@ Based on this table, the best solution seems to be the Efficient Net ([efficient
 ## Environment 
 *environment.yml* and *requirements.txt* can be found at the root of the project to create an environment to run the project.
 
-To use the *environment.yml*, follow this procedure:
+To use the *environment.yml* (or *environment_windows.yml* for Windows users), follow this procedure:
 - In the terminal, go to the root of your directory
 - Insert the following command
 ```
@@ -243,20 +243,6 @@ An environment named iapr-project will be created.
 Then activate this environment
 ```
 conda activate iapr-project
-```
-To use the *requirements.txt* file, follow this procedure:
-- In the terminal, go to the root of your directory
-- Insert the following command:
-```
-conda create -n iapr-project python=3.12.2
-```
-- Then:
-```
-conda activate iapr-project
-```
-- Finally:
-```
-pip install -r requirements.txt
 ```
 
 ## Run the solution
