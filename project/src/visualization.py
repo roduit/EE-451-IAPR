@@ -161,7 +161,7 @@ def display_augmentation(image):
 
     axs[3].imshow(image_contrast)
     axs[3].axis('off')
-    axs[3].set_title('Contrast')
+    axs[3].set_title('Gamma Correction')
 
     plt.show()
 
